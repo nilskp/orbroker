@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+
+Name: org/orbroker/
+Sealed: true
+Specification-Title: "O/R Broker" 
+Specification-Version: "3.2"
+Implementation-Title: "org.orbroker" 
+Implementation-Version: "3.2-SNAPSHOT"

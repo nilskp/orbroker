@@ -1,0 +1,92 @@
+<project>
+
+	<target name="init" depends="clean">
+		<property environment="env" />
+		<property name="scala.home" value="${env.SCALA_HOME}" />
+		<property name="junit.home" value="${env.JUNIT_HOME}" />
+		<echo message="SCALA_HOME: ${scala.home}" />
+		<echo message="JUNIT_HOME: ${junit.home}" />
+		<property name="junit.jar" value="${junit.home}/junit.jar" />
+		<property name="scala.jar" value="${scala.home}/lib/scala-library.jar" />
+		<taskdef resource="scala/tools/ant/antlib.xml">
+			<classpath>
+				<pathelement location="${scala.home}/lib/scala-compiler.jar" />
+				<pathelement location="${scala.jar}" />
+			</classpath>
+		</taskdef>
+		<mkdir dir="build" />
+	</target>
+
+	<target name="clean">
+		<delete dir="build" />
+	</target>
+
+	<target name="compile-main" depends="init">
+		<mkdir dir="build/main" />
+		<scalac srcdir="src/main" destdir="build/main" unchecked="yes" addparams="-optimise">
+			<bootclasspath>
+				<pathelement location="${scala.home}/lib/scala-compiler.jar" />
+				<pathelement location="${scala.jar}" />
+			</bootclasspath>
+
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+			<include name="scala/**/*.scala" />
+			<include name="java/**/*.java" />
+		</scalac>
+		<!--
+		<javac srcdir="src/main" destdir="build/main">
+			<classpath>
+				<pathelement location="${scala.jar}"/>
+				<fileset dir="lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
+			<include name="java/**/*.java"/>
+		</javac>
+		-->
+	</target>
+
+	<target name="compile-test" depends="compile-main">
+		<mkdir dir="build/test" />
+		<scalac srcdir="src/test" destdir="build/test" unchecked="yes">
+			<bootclasspath>
+				<pathelement location="${scala.home}/lib/scala-compiler.jar" />
+				<pathelement location="${scala.jar}" />
+			</bootclasspath>
+
+			<classpath>
+				<pathelement path="build/main" />
+				<pathelement location="${junit.jar}" />
+				<fileset dir="lib">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+			<include name="scala/**/*.scala" />
+			<include name="java/**/*.java" />
+		</scalac>
+	</target>
+
+
+	<target name="make-jar" depends="compile-main">
+		<jar basedir="build/main" destfile="build/orbroker.jar" index="true" manifest="src/main/resources/META-INF/MANIFEST.MF" />
+	</target>
+
+	<target name="run-junit" depends="compile-test">
+		<junit fork="yes" printsummary="on" haltonfailure="true" haltonerror="true">
+			<jvmarg value="-ea" />
+			<classpath>
+				<pathelement path="build/test" />
+				<pathelement location="${junit.jar}" />
+			</classpath>
+			<batchtest todir="build/junit">
+				<fileset dir="build/test">
+					<include name="**/Test*.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+</project>
