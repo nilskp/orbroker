@@ -2,14 +2,14 @@ package org.orbroker
 
 import org.orbroker.conv._
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.mutable.ConcurrentMap
+import scala.collection.concurrent.{ Map => ConcurrentMap }
 
 final class Token[T] private (
-    private val sql: Option[String],
-    val id: Symbol,
-    private val ext: QueryExtractor[T],
-    private[orbroker] val parmConverters: ConcurrentHashMap[Class[_], Option[ParmConverter]]) {
-  
+  private val sql: Option[String],
+  val id: Symbol,
+  private val ext: QueryExtractor[T],
+  private[orbroker] val parmConverters: ConcurrentHashMap[Class[_], Option[ParmConverter]]) {
+
   private[orbroker] val extractor: QueryExtractor[T] = ext match {
     case je: JoinExtractor[_] ⇒ new SafeJoinExtractor(je)
     case other: QueryExtractor[_] ⇒ other
@@ -44,7 +44,8 @@ final class Token[T] private (
     // That didn't work. Let's try the interfaces
     refClass.getInterfaces foreach { iface ⇒
       parmConverters.get(iface) match {
-        case pc: Some[_] ⇒ parmConverters.put(refClass, pc); return pc
+        case pc: Some[_] ⇒
+          parmConverters.put(refClass, pc); return pc
         case _ ⇒ // Ignore
       }
     }
@@ -63,7 +64,7 @@ final class Token[T] private (
 }
 
 object Token {
-  
+
   private def toMap(parmConverters: Seq[ParmConverter]) = {
     val map = new ConcurrentHashMap[Class[_], Option[ParmConverter]]
     parmConverters foreach { pc ⇒ map.put(pc.fromType, Some(pc)) }
