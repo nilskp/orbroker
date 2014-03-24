@@ -1,92 +1,152 @@
-<project>
+<project name="O/R Broker" xmlns:ivy="antlib:org.apache.ivy.ant">
 
-	<target name="init" depends="clean">
-		<property environment="env" />
-		<property name="scala.home" value="${env.SCALA_HOME}" />
-		<property name="junit.home" value="${env.JUNIT_HOME}" />
-		<echo message="SCALA_HOME: ${scala.home}" />
-		<echo message="JUNIT_HOME: ${junit.home}" />
-		<property name="junit.jar" value="${junit.home}/junit.jar" />
-		<property name="scala.jar" value="${scala.home}/lib/scala-library.jar" />
-		<taskdef resource="scala/tools/ant/antlib.xml">
-			<classpath>
-				<pathelement location="${scala.home}/lib/scala-compiler.jar" />
-				<pathelement location="${scala.jar}" />
-			</classpath>
-		</taskdef>
-		<mkdir dir="build" />
+	<target name="ivy-download" depends="clean, init">
+		<mkdir dir="lib" />
+		<get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar" dest="${ivy.jar}" skipexisting="true" />
 	</target>
 
+	<target name="ivy-taskdef" depends="ivy-download">
+		<path id="ivy.lib.path">
+			<pathelement location="${ivy.jar}" />
+		</path>
+		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
+	</target>
+
+	<target name="scala-taskdef" depends="resolve-deps">
+		<taskdef resource="scala/tools/ant/antlib.xml">
+			<classpath>
+				<pathelement location="${scala-lib.jar}" />
+				<pathelement location="${scala-comp.jar}" />
+				<pathelement location="${scala-refl.jar}" />
+			</classpath>
+		</taskdef>
+	</target>
+
+	<target name="resolve-deps" depends="ivy-taskdef" description="Resolve dependencies">
+		<ivy:retrieve />
+	</target>
+
+	<target name="init" depends="clean">
+		<tstamp />
+		<property name="scala.major-minor" value="2.10" />
+		<property name="scala.rev" value="3" />
+		<property name="scala.version" value="${scala.major-minor}.${scala.rev}" />
+		<property name="ivy.version" value="2.3.0" />
+		<property name="orbroker.version" value="4.0-SNAPSHOT" />
+		<property name="orbroker.jar" value="${ant.project.name}-${orbroker.version}-scala-${scala.major-minor}-${DSTAMP}.jar" />
+		<property name="ivy.jar" value="lib/ivy-${ivy.version}.jar" />
+		<property name="scala-lib.jar" value="lib/scala-library-${scala.version}.jar" />
+		<property name="scala-comp.jar" value="lib/scala-compiler-${scala.version}.jar" />
+		<property name="scala-refl.jar" value="lib/scala-reflect-${scala.version}.jar" />
+		<mkdir dir="build" />
+	</target>
+	
 	<target name="clean">
 		<delete dir="build" />
 	</target>
 
-	<target name="compile-main" depends="init">
+	<target name="scalac">
+		<scalac srcdir="${srcdir}" destdir="${build.destdir}" addparams="${scalac.params}">
+			<bootclasspath>
+				<pathelement location="${scala-comp.jar}" />
+				<pathelement location="${scala-lib.jar}" />
+				<pathelement location="${scala-refl.jar}" />
+			</bootclasspath>
+
+			<classpath>
+				<pathelement path="${build.destdir}" />
+				<fileset dir="lib">
+					<include name="**/*.jar" />
+					<exclude name="scala-*" />
+				</fileset>
+			</classpath>
+			<include name="scala/**/*.scala" />
+		</scalac>
+	</target>
+
+	<target name="compile-for-jar" depends="clean, init, resolve-deps, scala-taskdef">
 		<mkdir dir="build/main" />
-		<scalac srcdir="src/main" destdir="build/main" unchecked="yes" addparams="-optimise">
-			<bootclasspath>
-				<pathelement location="${scala.home}/lib/scala-compiler.jar" />
-				<pathelement location="${scala.jar}" />
-			</bootclasspath>
-
-			<classpath>
-				<fileset dir="lib">
-					<include name="*.jar" />
-				</fileset>
-			</classpath>
-			<include name="scala/**/*.scala" />
-			<include name="java/**/*.java" />
-		</scalac>
-		<!--
-		<javac srcdir="src/main" destdir="build/main">
-			<classpath>
-				<pathelement location="${scala.jar}"/>
-				<fileset dir="lib">
-					<include name="*.jar"/>
-				</fileset>
-			</classpath>
-			<include name="java/**/*.java"/>
-		</javac>
-		-->
+		<antcall target="scalac">
+			<param name="srcdir" value="src/main" />
+			<param name="build.destdir" value="build/main" />
+			<param name="scalac.params" value="-optimise -unchecked -deprecation -explaintypes -Xdisable-assertions" />
+		</antcall>
 	</target>
 
-	<target name="compile-test" depends="compile-main">
-		<mkdir dir="build/test" />
-		<scalac srcdir="src/test" destdir="build/test" unchecked="yes">
-			<bootclasspath>
-				<pathelement location="${scala.home}/lib/scala-compiler.jar" />
-				<pathelement location="${scala.jar}" />
-			</bootclasspath>
-
-			<classpath>
-				<pathelement path="build/main" />
-				<pathelement location="${junit.jar}" />
-				<fileset dir="lib">
-					<include name="*.jar" />
-				</fileset>
-			</classpath>
-			<include name="scala/**/*.scala" />
-			<include name="java/**/*.java" />
-		</scalac>
+	<target name="compile-for-test" depends="clean, init, resolve-deps, scala-taskdef">
+		<property name="build.destdir" value="build/test" />
+		<property name="scalac.params" value="-nowarn" />
+		<mkdir dir="${build.destdir}" />
+		<antcall target="scalac">
+			<param name="srcdir" value="src/main" />
+			<param name="build.destdir" value="${build.destdir}" />
+			<param name="scalac.params" value="${scalac.params}" />
+		</antcall>
+		<antcall target="scalac">
+			<param name="srcdir" value="src/test" />
+			<param name="build.destdir" value="${build.destdir}" />
+			<param name="scalac.params" value="${scalac.params}" />
+		</antcall>
 	</target>
 
-
-	<target name="make-jar" depends="compile-main">
-		<jar basedir="build/main" destfile="build/orbroker.jar" index="true" manifest="src/main/resources/META-INF/MANIFEST.MF" />
-	</target>
-
-	<target name="run-junit" depends="compile-test">
-		<junit fork="yes" printsummary="on" haltonfailure="true" haltonerror="true">
+	<target name="run-junit" depends="compile-for-test" description="Run JUnit tests">
+		<copy todir="build/test">
+			<fileset dir="src/main/resources" />
+			<fileset dir="src/test/resources" />
+		</copy>
+		<mkdir dir="build/junit" />
+		<junit fork="yes" haltonfailure="true" haltonerror="true">
+			<formatter type="xml" />
 			<jvmarg value="-ea" />
+			<jvmarg value="-XX:-UseSplitVerifier" />
 			<classpath>
+				<fileset dir="lib">
+					<include name="**/*.jar" />
+					<exclude name="ant-*" />
+				</fileset>
 				<pathelement path="build/test" />
-				<pathelement location="${junit.jar}" />
+				<pathelement location="${scala-lib.jar}" />
 			</classpath>
 			<batchtest todir="build/junit">
 				<fileset dir="build/test">
-					<include name="**/Test*.class" />
+					<include name="**/*Test*.class" />
+					<exclude name="**/*$*.class" />
+					<exclude name="**/*Abstract*.class" />
 				</fileset>
 			</batchtest>
 		</junit>
 	</target>
+
+	<target name="full-build" depends="run-junit, scaladocs, make-jar" />
+
+	<target name="make-jar" depends="compile-for-jar" description="Make JAR">
+		<manifest file="build/MANIFEST.MF">
+			<attribute name="Built-By" value="${user.name}" />
+			<section name="orbroker">
+				<attribute name="Implementation-Title" value="orbroker" />
+				<attribute name="Implementation-Version" value="${orbroker.version} ${TODAY}" />
+				<attribute name="Implementation-Vendor" value="org.orbroker" />
+				<attribute name="Sealed" value="true" />
+			</section>
+		</manifest>
+		<copy todir="build/main">
+			<fileset dir="src/main/resources" />
+		</copy>
+		<jar basedir="build/main" destfile="build/${orbroker.jar}" index="true" manifest="build/MANIFEST.MF" />
+	</target>
+
+	<target name="scaladocs" depends="init, scala-taskdef">
+		<mkdir dir="build/api" />
+		<scaladoc destdir="build/api">
+			<classpath>
+				<fileset dir="lib">
+					<include name="**/*.jar" />
+				</fileset>
+				<pathelement location="${scala-lib.jar}" />
+			</classpath>
+			<src path="src/main/scala" />
+			<include name="**/*.scala" />
+		</scaladoc>
+	</target>
+
 </project>
