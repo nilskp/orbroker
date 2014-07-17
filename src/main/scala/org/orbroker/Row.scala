@@ -19,14 +19,17 @@ trait Row extends ReadableMap {
   /**
    * ASCII data stream.
    */
-  def asciiStream(name: String): Option[InputStream]
+  def asciiStream(name: String): InputStream
+  def asciiStream_(name: String): Option[InputStream]
   /**
    * Binary data stream.
    */
-  def binaryStream(name: String): Option[InputStream]
+  def binaryStream(name: String): InputStream
+  def binaryStream_(name: String): Option[InputStream]
   /**
    * Unicode character stream.
    */
-  def charStream(name: String): Option[Reader]
+  def charStream(name: String): Reader
+  def charStream_(name: String): Option[Reader]
 
 }

@@ -48,7 +48,7 @@ private[dynamic] object FreeMarkerStatement {
     Class.forName("freemarker.template.Template")
     true
   } catch {
-    case _ ⇒ false
+    case _: Throwable ⇒ false
   }
   def hasFreeMarkerConditionals(sq1: String) =
     ((sq1 contains "#if") && (sq1 contains "/#if")) ||

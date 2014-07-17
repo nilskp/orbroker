@@ -10,7 +10,7 @@ private[orbroker] trait CallStatement extends StaticStatement with ResultSetProd
     parms: Map[String, _],
     keyHandler: Option[(T) ⇒ Unit],
     receivers: Seq[Iterator[T] ⇒ R],
-    outParmHandler: Option[(OutParms) ⇒ OP]) = {
+    outParmHandler: Option[(OutParms) ⇒ OP]): (Int, OP, Seq[R]) = {
     val parsed = statement(parms)
     val started = System.nanoTime
     callback.beforeExecute(token.id, parsed.sql)
@@ -22,10 +22,11 @@ private[orbroker] trait CallStatement extends StaticStatement with ResultSetProd
       val rowsUpdated = cs.getUpdateCount
       val receiverResults = new collection.mutable.ArrayBuffer[R](64)
       if (hasResultSet) {
-        val elements: Iterator[Iterator[T] ⇒ R] = receivers.iterator
+        val receiversIter: Iterator[Iterator[T] ⇒ R] = receivers.iterator
         var rs = cs.getResultSet
-        while (rs != null && elements.hasNext) {
-          receiverResults += mapResult(token.extractor, rs, elements.next())
+        while (rs != null && receiversIter.hasNext) {
+          val receiver = receiversIter.next()
+          receiverResults += mapResult(token.extractor, rs, receiver)
           rs = if (cs.getMoreResults) cs.getResultSet else null
         }
       }

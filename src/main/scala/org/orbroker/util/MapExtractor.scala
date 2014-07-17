@@ -9,7 +9,7 @@ object MapExtractor extends RowExtractor[Map[String, Any]] {
   def extract(row: Row) = {
     var map = new scala.collection.immutable.HashMap[String, Any]
     row.columns foreach { name ⇒
-      row.any(name) foreach { value: Any ⇒
+      row.any_(name) foreach { value: Any ⇒
         map += name -> value
       }
     }

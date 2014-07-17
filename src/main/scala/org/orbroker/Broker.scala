@@ -78,14 +78,13 @@ final class Broker private[orbroker] (
     try {
       runSession(session, true, f)
     } catch {
-      case th ⇒ hasException = true; throw th
-    }
-    finally {
+      case e: Exception ⇒ hasException = true; throw e
+    } finally {
       try {
         session.close()
       } catch {
-        case th if !hasException ⇒ throw th
-        case _ ⇒ // Ignore and allow other exception 
+        case e: Exception if !hasException ⇒ throw e
+        case _: Exception ⇒ // Ignore and allow other exception 
       }
     }
 
@@ -120,14 +119,13 @@ final class Broker private[orbroker] (
     try {
       runSession(session, true, f)
     } catch {
-      case th ⇒ hasException = true; throw th
-    }
-    finally {
+      case e: Exception ⇒ hasException = true; throw e
+    } finally {
       try {
         session.close()
       } catch {
-        case th if !hasException ⇒ throw th
-        case _ ⇒ // Ignore and allow other exception 
+        case e: Exception if !hasException ⇒ throw e
+        case _: Exception ⇒ // Ignore and allow other exception 
       }
     }
 

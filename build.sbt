@@ -5,17 +5,17 @@ organization := "org.orbroker"
 
 version := "4.0.0-SNAPSHOT"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.1"
 
-javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
+javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
 scalacOptions ++= Seq("-deprecation","-explaintypes","-unchecked")
 
 libraryDependencies ++= Seq(
-  "org.freemarker" % "freemarker" % "2.3.18" % "optional",
+  "org.freemarker" % "freemarker" % "2.3.20" % "optional",
   "joda-time" % "joda-time" % "2.3" % "optional",
   "org.apache.velocity" % "velocity" % "1.7" % "optional",
-  "org.apache.derby" % "derby" % "10.4.2.0" % "test",
+  "org.apache.derby" % "derby" % "10.10.2.0" % "test",
 // junit interface for sbt
   "com.novocode" % "junit-interface" % "0.9" % "test->default"
 )

@@ -28,12 +28,12 @@
 
 	<target name="init" depends="clean">
 		<tstamp />
-		<property name="scala.major-minor" value="2.10" />
-		<property name="scala.rev" value="3" />
+		<property name="scala.major-minor" value="2.11" />
+		<property name="scala.rev" value="1" />
 		<property name="scala.version" value="${scala.major-minor}.${scala.rev}" />
 		<property name="ivy.version" value="2.3.0" />
-		<property name="orbroker.version" value="4.0-SNAPSHOT" />
-		<property name="orbroker.jar" value="${ant.project.name}-${orbroker.version}-scala-${scala.major-minor}-${DSTAMP}.jar" />
+		<property name="orbroker.version" value="4.0.0-SNAPSHOT" />
+		<property name="orbroker.jar" value="orbroker-${orbroker.version}-scala-${scala.major-minor}-${DSTAMP}.jar" />
 		<property name="ivy.jar" value="lib/ivy-${ivy.version}.jar" />
 		<property name="scala-lib.jar" value="lib/scala-library-${scala.version}.jar" />
 		<property name="scala-comp.jar" value="lib/scala-compiler-${scala.version}.jar" />
@@ -48,9 +48,9 @@
 	<target name="scalac">
 		<scalac srcdir="${srcdir}" destdir="${build.destdir}" addparams="${scalac.params}">
 			<bootclasspath>
-				<pathelement location="${scala-comp.jar}" />
-				<pathelement location="${scala-lib.jar}" />
-				<pathelement location="${scala-refl.jar}" />
+                <fileset dir="lib">
+                    <include name="scala-*" />
+                </fileset>
 			</bootclasspath>
 
 			<classpath>
@@ -93,6 +93,9 @@
 		<copy todir="build/test">
 			<fileset dir="src/main/resources" />
 			<fileset dir="src/test/resources" />
+			<fileset dir="src/test/scala">
+				<include name="**/*.sql"/>
+			</fileset>
 		</copy>
 		<mkdir dir="build/junit" />
 		<junit fork="yes" haltonfailure="true" haltonerror="true">
@@ -117,7 +120,7 @@
 		</junit>
 	</target>
 
-	<target name="full-build" depends="run-junit, scaladocs, make-jar" />
+	<target name="full-build" depends="run-junit, make-jar" /> <!-- FIXME: Should include `scaladocs`, but there's some unresovled dependency error -->
 
 	<target name="make-jar" depends="compile-for-jar" description="Make JAR">
 		<manifest file="build/MANIFEST.MF">

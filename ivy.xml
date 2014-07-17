@@ -1,11 +1,12 @@
 <ivy-module version="2.0">
 	<info organisation="org.orbroker" module="orbroker" />
 	<dependencies>
-		<dependency org="org.scala-lang" name="scala-compiler" rev="2.10.3"  />
+		<dependency org="org.scala-lang" name="scala-compiler" rev="2.11.1"  />
+        <dependency org="org.scala-lang.modules" name="scala-xml_2.11" rev="1.0.2" />
 		<dependency org="junit" name="junit" rev="4.11" />
-		<dependency org="org.freemarker" name="freemarker" rev="2.3.18"/>
+		<dependency org="org.freemarker" name="freemarker" rev="2.3.20"/>
 		<dependency org="joda-time" name="joda-time" rev="2.3"/>
 		<dependency org="org.apache.velocity" name="velocity" rev="1.7"/>
-		<dependency org="org.apache.derby" name="derby" rev="10.4.2.0"/>
+		<dependency org="org.apache.derby" name="derby" rev="10.10.2.0"/>
 	</dependencies>
 </ivy-module>

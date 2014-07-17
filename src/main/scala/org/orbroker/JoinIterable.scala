@@ -13,15 +13,14 @@ private[orbroker] class JoinIterable[T](key: Set[String], rs: ResultSet, adapter
   private class JoinIterator(rs: ResultSet, adapter: BrokerAdapter) extends Iterator[T] {
     private[this] var first = true
     private[this] val join = new JoinGroup(key, rs, Map.empty, adapter)
-    def hasNext: Boolean = first || {
-      if (!join.rsAdvanced) join.rsReadable = rs.next
-      join.rsReadable
-    }
+    def hasNext = first || join.rsReadable
     def next = {
       if (hasNext) {
         first = false
         join.newGroup()
-        extractor(join.row, join)
+        val value = extractor(join.row, join)
+        if (!join.isRsAdvanced) join.rsReadable = rs.next
+        value
       } else {
         throw new NoSuchElementException(s"Result set has no more rows")
       }

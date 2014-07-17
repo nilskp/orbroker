@@ -75,11 +75,11 @@ trait JoinExtractor[T] extends QueryExtractor[T] {
 private[orbroker] final class DefaultExtractor(id: Symbol) extends RowExtractor[Any] {
   def extract(row: Row): Any = try {
     row.columns.size match {
-      case 1 ⇒ row.any("1").getOrElse(null)
-      case 2 ⇒ (row.any("1").getOrElse(null), row.any("2").getOrElse(null))
-      case 3 ⇒ (row.any("1").getOrElse(null), row.any("2").getOrElse(null), row.any("3").getOrElse(null))
-      case 4 ⇒ (row.any("1").getOrElse(null), row.any("2").getOrElse(null), row.any("3").getOrElse(null), row.any("4").getOrElse(null))
-      case 5 ⇒ (row.any("1").getOrElse(null), row.any("2").getOrElse(null), row.any("3").getOrElse(null), row.any("4").getOrElse(null), row.any("5").getOrElse(null))
+      case 1 ⇒ row.any_("1").orNull
+      case 2 ⇒ (row.any_("1").orNull, row.any_("2").orNull)
+      case 3 ⇒ (row.any_("1").orNull, row.any_("2").orNull, row.any_("3").orNull)
+      case 4 ⇒ (row.any_("1").orNull, row.any_("2").orNull, row.any_("3").orNull, row.any_("4").orNull)
+      case 5 ⇒ (row.any_("1").orNull, row.any_("2").orNull, row.any_("3").orNull, row.any_("4").orNull, row.any_("5").orNull)
       case x ⇒ throw new ConfigurationException(s"$x columns available for '$id', and no RowExtractor registered")
     }
   } catch {

@@ -57,7 +57,7 @@ private[orbroker] abstract class Session(
 
   private[orbroker] def discardConnection() {
     if (conn != null) {
-      try { conn.close() } catch { case _ ⇒ /* Ignore */ }
+      try { conn.close() } catch { case _: Exception ⇒ /* Ignore */ }
       conn = null
     }
   }

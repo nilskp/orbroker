@@ -31,7 +31,8 @@ private[orbroker] class JoinGroup private (
   val row = new ResultSetRow(rs, adapter, columnAliases) with StatefulRow
 
   /** Has result set been advanced internally? */
-  var rsAdvanced = false
+  private var rsAdvanced = false
+  def isRsAdvanced = rsAdvanced
   /** Is result set readable at current row? */
   var rsReadable = true
 

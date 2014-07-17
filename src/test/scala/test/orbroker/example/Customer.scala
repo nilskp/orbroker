@@ -11,9 +11,9 @@ class Customer(val name: String) {
 object CustomerExtractor extends RowExtractor[Customer] with JoinExtractor[Customer] {
   
   def extract(row: Row) = {
-    val name = row.string("name").get
+    val name = row.string("name")
     val cust = new Customer(name)
-    cust.id = row.integer("ID")
+    cust.id = row.integer_("ID")
     cust
   }
   

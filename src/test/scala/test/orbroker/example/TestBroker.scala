@@ -44,7 +44,7 @@ class TestBroker {
     try {
       stm.executeUpdate("create " + create)
     } catch {
-      case _ ⇒ // Ignore
+      case _: Exception ⇒ // Ignore
     }
   }
 
@@ -68,9 +68,9 @@ class TestBroker {
       }
       def extract(row: Row) {
         out.append('{')
-        writeKeyValue("id", row.integer("ID").get)
-        writeKeyValue("name", row.string("Name").get)
-        writeKeyValue("price", row.decimal("Price").get)
+        writeKeyValue("id", row.integer("ID"))
+        writeKeyValue("name", row.string("Name"))
+        writeKeyValue("price", row.decimal("Price"))
         out.append('}').append(',')
       }
     }
@@ -100,9 +100,6 @@ class TestBroker {
     config.alwaysPrepare = false
     val callback = new MultiProxyCallback(
       new JDKLoggingCallback(Logger, Level.INFO) with FullLoggingCallback with IgnoreWarnings {
-        val ignoreSQLState = Set("01J01")
-      },
-      new ScalaLoggedCallback(new scala.util.logging.ConsoleLogger {}) with AfterExecLoggingCallback with IgnoreWarnings {
         val ignoreSQLState = Set("01J01")
       }
     )
@@ -172,8 +169,8 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
       var char2 = "z"
       var result: String = null
       qry.callForParms(CallKongKat, "char1" -> "a", "char2" -> char2) { parms ⇒
-        char2 = parms.string("char2").get
-        result = parms.string("result").get
+        char2 = parms.string("char2")
+        result = parms.string("result")
       }
       assertEquals("Z", char2)
       assertEquals("a-z", result)
@@ -183,7 +180,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   private def testSP2(broker: Broker) {
     case class SPOut(char2: String, result: String)
     object OutExtractor extends OutParmExtractor[SPOut] {
-      def extract(out: OutParms) = SPOut(out.string("char2").get, out.string("result").get)
+      def extract(out: OutParms) = SPOut(out.string("char2"), out.string("result"))
     }
     val token = Token(CallKongKat.id, OutExtractor)
     broker.readOnly() { qry ⇒
@@ -440,7 +437,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
     try {
       stm.executeUpdate("drop " + drop)
     } catch {
-      case _ ⇒ // Ignore 
+      case _: Exception ⇒ // Ignore 
     }
   }
 

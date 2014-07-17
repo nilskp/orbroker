@@ -58,7 +58,7 @@ private[dynamic] object VelocityStatement {
     Class.forName("org.apache.velocity.app.VelocityEngine")
     true
   } catch {
-    case _ ⇒ false
+    case _: Throwable ⇒ false
   }
   def hasVelocityConditionals(sql: String) =
     ((sql contains "#if") || (sql contains "#foreach")) &&
