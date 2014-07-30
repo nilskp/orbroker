@@ -6,7 +6,7 @@ import scala.collection.Set
 /**
  * Top level exception for O/R Broker.
  */
-abstract class BrokerException(msg: String, cause: Throwable) extends RuntimeException(msg, cause)
+sealed abstract class BrokerException(msg: String, cause: Throwable) extends RuntimeException(msg, cause)
 
 /**
  * More than one row was returned or affected by the executed statement.
@@ -65,3 +65,8 @@ class ConfigurationException(msg: String, cause: Throwable) extends BrokerExcept
  * Expected statements were missing from builder.
  */
 class MissingStatementException(val missing: Set[Symbol]) extends ConfigurationException("Expected statements missing: %s".format(missing.mkString(", ")))
+
+/**
+ * Value was NULL.
+ */
+class NullValueException(name: String) extends BrokerException(s""""$name" is NULL""", null)

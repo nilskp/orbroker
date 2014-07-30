@@ -4,5 +4,5 @@ import org.orbroker.Row
 import org.orbroker.RowExtractor
 
 object IntColumn extends RowExtractor[Int] {
-  def extract(row: Row) = row.integer("1")
+  def extract(row: Row) = row("1").as[Int]
 }

@@ -68,9 +68,9 @@ class TestBroker {
       }
       def extract(row: Row) {
         out.append('{')
-        writeKeyValue("id", row.integer("ID"))
-        writeKeyValue("name", row.string("Name"))
-        writeKeyValue("price", row.decimal("Price"))
+        writeKeyValue("id", row("ID").as[Int])
+        writeKeyValue("name", row("Name").as[String])
+        writeKeyValue("price", row("Price").as[BigDecimal])
         out.append('}').append(',')
       }
     }
@@ -169,8 +169,8 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
       var char2 = "z"
       var result: String = null
       qry.callForParms(CallKongKat, "char1" -> "a", "char2" -> char2) { parms ⇒
-        char2 = parms.string("char2")
-        result = parms.string("result")
+        char2 = parms("char2").as[String]
+        result = parms("result").as[String]
       }
       assertEquals("Z", char2)
       assertEquals("a-z", result)
@@ -180,7 +180,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   private def testSP2(broker: Broker) {
     case class SPOut(char2: String, result: String)
     object OutExtractor extends OutParmExtractor[SPOut] {
-      def extract(out: OutParms) = SPOut(out.string("char2"), out.string("result"))
+      def extract(out: OutParms) = SPOut(out("char2").as[String], out("result").as[String])
     }
     val token = Token(CallKongKat.id, OutExtractor)
     broker.readOnly() { qry ⇒

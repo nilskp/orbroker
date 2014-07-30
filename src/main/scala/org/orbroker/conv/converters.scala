@@ -1,5 +1,7 @@
 package org.orbroker.conv
 
+import java.util.Locale
+
 /**
  * [[scala.math.BigDecimal]]=>[[java.math.BigDecimal]].
  */
@@ -42,7 +44,7 @@ object UtilDateToDateConv extends ParmConverter {
 object JodaLocalDateConv extends ParmConverter {
   type T = org.joda.time.LocalDate
   val fromType = classOf[T]
-  def toJdbcType(date: T) = new java.sql.Date(date.toDateMidnight.getMillis)
+  def toJdbcType(date: T) = new java.sql.Date(date.toDateTimeAtStartOfDay.getMillis)
 }
 
 /**
@@ -93,4 +95,11 @@ object Inet4AddrBinaryConv extends ParmConverter {
   type T = java.net.Inet4Address
   val fromType = classOf[T]
   def toJdbcType(addr: T): Array[Byte] = addr.getAddress
+}
+
+object LocaleConverter extends ParmConverter {
+  type T = Locale
+  val fromType = classOf[T]
+  def toJdbcType(l: T): String = l.toLanguageTag
+  def fromTag(languageTag: String) = Locale.forLanguageTag(languageTag)
 }

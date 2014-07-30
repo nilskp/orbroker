@@ -75,7 +75,7 @@ package object pimp {
      * @param receiver
      */
     def extract[T, R](parmName: String)(extractor: QueryExtractor[T])(receiver: Iterator[T] ⇒ R): Option[R] = {
-      for (rs ← out.any_[ResultSet](parmName)) yield extractor match {
+      for (rs ← out(parmName).opt[ResultSet]) yield extractor match {
         case je: JoinExtractor[_] ⇒ out.mapResult(new SafeJoinExtractor(je), rs, receiver)
         case _ ⇒ out.mapResult(extractor, rs, receiver)
       }

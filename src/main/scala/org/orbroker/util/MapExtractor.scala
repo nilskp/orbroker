@@ -7,12 +7,11 @@ import org.orbroker._
  */
 object MapExtractor extends RowExtractor[Map[String, Any]] {
   def extract(row: Row) = {
-    var map = new scala.collection.immutable.HashMap[String, Any]
-    row.columns foreach { name ⇒
-      row.any_(name) foreach { value: Any ⇒
-        map += name -> value
+    row.columns.foldLeft(new scala.collection.immutable.HashMap[String, Any]) {
+      case (map, name) => row(name).opt[Any] match {
+        case Some(value) => map.updated(name, value)
+        case _ => map
       }
     }
-    map
   }
 }

@@ -16,8 +16,8 @@ class ItemWithOrders(n: String, p: Decimal, orders: Set[Order]) extends Item(n, 
 
 object ItemExtractor extends RowExtractor[Item] with JoinExtractor[Item] {
   override def extract(row: Row) = {
-    val item = new Item(row.string("Name"), Decimal(row.decimal("price")))
-    item.id = row.integer_("ID")
+    val item = new Item(row("Name").as[String], row("price").as[Decimal])
+    item.id = row("ID").opt[Int]
     item
   }
 
@@ -32,12 +32,12 @@ class CrazyItemExtractor(orderToken: Token[Order])(implicit session: QuerySessio
   val itemCount = session.selectOne[Int]('countItems).get
 
   override def extract(row: Row) = {
-    val itemID = row.integer_("ID")
+    val itemID = row("ID").opt[Int]
     //    var orderSet: Set[Order] = Set.empty
     val orderSet = session.select(orderToken) { orders ⇒
       orders.filter(_.items.exists(_.id == itemID)).toSet
     }
-    val item = new ItemWithOrders(row.string("Name"), Decimal(row.decimal("price")), orderSet)
+    val item = new ItemWithOrders(row("Name").as[String], row("price").as[Decimal], orderSet)
     item.id = itemID
     item
   }

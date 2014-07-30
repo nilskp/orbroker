@@ -16,8 +16,8 @@ object OrderExtractor extends JoinExtractor[Order] {
   val key = Set("ID")
 
   def extract(row: Row, join: Join) = {
-    val orderId = row.integer_("ID")
-    val date = new LocalDate(row.date("OrderDate").getTime)
+    val orderId = row("ID").opt[Int]
+    val date = row("OrderDate").as[LocalDate]
     val cust = join.extractOne(CustomerExtractor, custAlias).get
     val items = new ArrayBuffer[Item]
     join.extractGroup(ItemExtractor, itemAlias) { item ⇒
