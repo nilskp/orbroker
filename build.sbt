@@ -5,7 +5,7 @@ organization := "org.orbroker"
 
 version := "4.0.0-SNAPSHOT"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.2"
 
 javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
