@@ -1,6 +1,6 @@
 package test.orbroker.example
 
-import scala.math.{ BigDecimal ⇒ Decimal }
+import scala.math.{ BigDecimal => Decimal }
 import scala.math.BigDecimal.RoundingMode._
 import org.orbroker._
 import org.orbroker.pimp._
@@ -34,7 +34,7 @@ class CrazyItemExtractor(orderToken: Token[Order])(implicit session: QuerySessio
   override def extract(row: Row) = {
     val itemID = row("ID").opt[Int]
     //    var orderSet: Set[Order] = Set.empty
-    val orderSet = session.select(orderToken) { orders ⇒
+    val orderSet = session.select(orderToken) { orders =>
       orders.filter(_.items.exists(_.id == itemID)).toSet
     }
     val item = new ItemWithOrders(row("Name").as[String], row("price").as[Decimal], orderSet)

@@ -8,9 +8,9 @@ private[orbroker] trait CallStatement extends StaticStatement with ResultSetProd
     token: Token[T],
     session: Session,
     parms: Map[String, _],
-    keyHandler: Option[(T) ⇒ Unit],
-    receivers: Seq[Iterator[T] ⇒ R],
-    outParmHandler: Option[(OutParms) ⇒ OP]): (Int, OP, Seq[R]) = {
+    keyHandler: Option[(T) => Unit],
+    receivers: Seq[Iterator[T] => R],
+    outParmHandler: Option[(OutParms) => OP]): (Int, OP, Seq[R]) = {
     val parsed = statement(parms)
     val started = System.nanoTime
     callback.beforeExecute(token.id, parsed.sql)
@@ -22,7 +22,7 @@ private[orbroker] trait CallStatement extends StaticStatement with ResultSetProd
       val rowsUpdated = cs.getUpdateCount
       val receiverResults = new collection.mutable.ArrayBuffer[R](64)
       if (hasResultSet) {
-        val receiversIter: Iterator[Iterator[T] ⇒ R] = receivers.iterator
+        val receiversIter: Iterator[Iterator[T] => R] = receivers.iterator
         var rs = cs.getResultSet
         while (rs != null && receiversIter.hasNext) {
           val receiver = receiversIter.next()
@@ -35,11 +35,11 @@ private[orbroker] trait CallStatement extends StaticStatement with ResultSetProd
       }
 
       val outParm: OP = outParmHandler match {
-        case Some(handler) ⇒ {
+        case Some(handler) => {
           val outParms = new OutParmsImpl(token.id, parsed.parmIdxMap, cs, callback, adapter)
           handler(outParms)
         }
-        case None ⇒ null.asInstanceOf[OP]
+        case None => null.asInstanceOf[OP]
       }
       callback.afterExecute(token.id, parsed.sql, values, diffTimeInMicros(started))
       (rowsUpdated, outParm, receiverResults)

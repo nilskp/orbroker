@@ -44,7 +44,7 @@ class TestBroker {
     try {
       stm.executeUpdate("create " + create)
     } catch {
-      case _: Exception ⇒ // Ignore
+      case _: Exception => // Ignore
     }
   }
 
@@ -57,9 +57,9 @@ class TestBroker {
         out.append('"')
         out.append(':')
         value match {
-          case n @ (_: Number | _: Boolean) ⇒
+          case n @ (_: Number | _: Boolean) =>
             out.write(n.toString)
-          case r ⇒
+          case r =>
             out.append('"')
             out.write(String.valueOf(r))
             out.append('"')
@@ -75,7 +75,7 @@ class TestBroker {
       }
     }
     ItemsExtractor.out.append('[')
-    broker.readOnly() { session ⇒
+    broker.readOnly() { session =>
       val t = Token('selectItems, ItemsExtractor)
       session.selectInto(t)
     }
@@ -125,14 +125,14 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   def autoCommit() {
     val broker = Broker(config)
     try {
-      broker.transactional() { session ⇒
+      broker.transactional() { session =>
         session.execute('insertNumber, "number" -> 5000)
       }
       fail("Should fail missing commit")
     } catch {
-      case e: RollbackException ⇒ // Expected
+      case e: RollbackException => // Expected
     }
-    val count = broker.transaction() { session ⇒
+    val count = broker.transaction() { session =>
       session.execute('insertNumber, "number" -> 5000)
     }
     assertEquals(1, count)
@@ -144,13 +144,13 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
 
     val broker = Broker(config)
     val count = 17L
-    val range = broker.transactional(TRANSACTION_REPEATABLE_READ) { session ⇒
+    val range = broker.transactional(TRANSACTION_REPEATABLE_READ) { session =>
       try {
         session.execute("CREATE TABLE SEQNUM (NEXTID BIGINT NOT NULL)")
         session.execute("INSERT INTO SEQNUM VALUES(0)")
         session.commit()
       } catch {
-        case _: SQLException ⇒ session.rollback()
+        case _: SQLException => session.rollback()
       }
 
       val first = session.selectOne[Long]("SELECT NEXTID FROM SEQNUM").get
@@ -165,10 +165,10 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   }
 
   private def testSP(broker: Broker) {
-    broker.readOnly() { qry ⇒
+    broker.readOnly() { qry =>
       var char2 = "z"
       var result: String = null
-      qry.callForParms(CallKongKat, "char1" -> "a", "char2" -> char2) { parms ⇒
+      qry.callForParms(CallKongKat, "char1" -> "a", "char2" -> char2) { parms =>
         char2 = parms("char2").as[String]
         result = parms("result").as[String]
       }
@@ -183,7 +183,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
       def extract(out: OutParms) = SPOut(out("char2").as[String], out("result").as[String])
     }
     val token = Token(CallKongKat.id, OutExtractor)
-    broker.readOnly() { qry ⇒
+    broker.readOnly() { qry =>
       val char2 = "z"
       val spOut = qry.selectOne(token, "char1" -> "a", "char2" -> "z").get
       assertEquals("Z", spOut.char2)
@@ -192,7 +192,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   }
 
   private def testSubQuery(broker: Broker) {
-    broker.readOnly() { implicit session ⇒
+    broker.readOnly() { implicit session =>
       val ext = new CrazyItemExtractor(SelectOrders)
       assertEquals(ext.itemCount, ext.itemCount2)
       val items = session.selectAll(Token('selectItems, ext))
@@ -203,7 +203,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   }
 
   private def insertNoParmBatch(broker: Broker) {
-    broker.transaction() { session ⇒
+    broker.transaction() { session =>
       val batchSize = 7
       val inserted = session.executeBatch("INSERT INTO JustTheKey VALUES DEFAULT", batchSize)
       assertEquals(batchSize, inserted)
@@ -211,7 +211,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   }
 
   private def tooLongName(broker: Broker, conn: Connection): Customer = {
-    broker.transactional(conn) { session ⇒
+    broker.transactional(conn) { session =>
       val cust = new Customer(FullLongName)
       insertLongNameCustomer(session, cust)
     }
@@ -222,7 +222,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
       cust.id = session.executeForKey(InsertCustomer, "cust" -> cust)
       cust
     } catch {
-      case e: SQLException if (e.getSQLState == "22001") ⇒ {
+      case e: SQLException if (e.getSQLState == "22001") => {
         insertLongNameCustomer(session, new Customer(cust.name.substring(0, cust.name.length - 1)))
       }
     }
@@ -238,7 +238,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
 
   private def testNullAndNoneAndWarnings(broker: Broker) {
     val numbers = Seq(null, 1, 2, 3, 4, 5, null, None, 7, 8, 9, None)
-    val countAndAverage = broker.transactional() { session ⇒
+    val countAndAverage = broker.transactional() { session =>
       assertEquals(0, session.executeBatch('insertNumber, "number" -> Seq()))
       val count = session.executeBatch('insertNumber, "number" -> numbers)
       assertEquals(numbers.size, count)
@@ -257,7 +257,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
       config.verify(Set(missingId))
       fail("Should fail on missing id")
     } catch {
-      case e: MissingStatementException ⇒ assertTrue(missingId + " not in message: " + e.getMessage, e.getMessage.contains(missingId.toString))
+      case e: MissingStatementException => assertTrue(missingId + " not in message: " + e.getMessage, e.getMessage.contains(missingId.toString))
     }
 
     val unexpected = config.verify(Set(InsertOrderItem.id, SelectCustomer.id, InsertCustomer.id,
@@ -271,14 +271,14 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   @Test
   def indexedParm() {
     val broker = Broker(config)
-    broker.transactional() { session ⇒
+    broker.transactional() { session =>
       session.execute("CREATE TABLE FOOBAR ( ID integer primary key, name varchar(10) not null )")
       type FooBar = (Int, String)
       val values = Seq((1, "Foo"), (2, "Bar"), (3, "Baz"), (4, "Fee"))
       assertEquals(values.size, session.executeBatch("INSERT INTO FOOBAR VALUES(:foo._1, :foo._2)", "foo" -> values))
       session.commit()
     }
-    val names = broker.readOnly() { session ⇒
+    val names = broker.readOnly() { session =>
       val ids = Seq(1, 2)
       session.selectAll[String]("SELECT Name From FooBar WHERE ID IN (:ids[0], :ids[1]) ORDER BY Name", "ids" -> ids)
     }
@@ -318,7 +318,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
     val items2 = Seq(fries, shake)
     val order2 = new Order(new LocalDate, customer, items2)
 
-    broker.transactional() { session ⇒
+    broker.transactional() { session =>
 
       insertCustomer(session, customer)
       insertItems(session, items)
@@ -330,7 +330,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
       session.commit()
     }
 
-    val cust2 = broker.readOnly() { session ⇒
+    val cust2 = broker.readOnly() { session =>
       session.timeout = 1
       val cust = session.selectOne(SelectCustomer, "id" -> customer.id)
       Logger.info(cust.toString)
@@ -352,7 +352,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   }
 
   private def testOnTheFlyQuery(broker: Broker) {
-    broker.readOnly() { session ⇒
+    broker.readOnly() { session =>
       val sql = "SELECT COUNT(*) FROM CUSTOMER"
       val onTheFly = Token[Int](sql, 'onTheFly)
       val count = session.selectOne(onTheFly).get
@@ -373,19 +373,19 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
     // strangely is BigDecimal,
     val savepoint = txn.makeSavepoint()
     try {
-      txn.executeBatchForKeys(InsertOrder, "order" -> orders) { newId: java.math.BigDecimal ⇒
+      txn.executeBatchForKeys(InsertOrder, "order" -> orders) { newId: java.math.BigDecimal =>
         val order = orderIter.next
         order.id = Some(newId.intValue)
         Logger.info(order + " got ID: " + order.id.get)
       }
     } catch {
-      case e: RuntimeException if e.getMessage.contains("ASSERT FAILED") ⇒ {
+      case e: RuntimeException if e.getMessage.contains("ASSERT FAILED") => {
         txn.rollbackSavepoint(savepoint)
         Logger.info("Getting all the generated keys from a batch INSERT is not supported by this driver")
         for (order ← orders)
           insertOrder(txn, order)
       }
-      case e: UnsupportedJDBCOperationException ⇒ {
+      case e: UnsupportedJDBCOperationException => {
         txn.rollbackSavepoint(savepoint)
         Logger.info("Getting all the generated keys from a batch INSERT is not supported by this driver")
         for (order ← orders)
@@ -395,7 +395,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   }
 
   private def insertOrder(txn: Transaction, order: Order) {
-    txn.executeForKey(InsertOrder, "order" -> order) foreach { newId: java.math.BigDecimal ⇒
+    txn.executeForKey(InsertOrder, "order" -> order) foreach { newId: java.math.BigDecimal =>
       order.id = Some(newId.intValue)
       Logger.info(order + " got ID: " + order.id.get)
     }
@@ -405,20 +405,20 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
     val itemsIter = items.iterator
     val savepoint = txn.makeSavepoint()
     try {
-      txn.executeBatchForKeys(InsertItem, "item" -> items) { newId: Int ⇒
+      txn.executeBatchForKeys(InsertItem, "item" -> items) { newId: Int =>
         val item = itemsIter.next
         item.id = Some(newId)
         Logger.info(item + " got ID: " + item.id.get)
       }
     } catch {
       // Normally, this exception should not be caught.
-      case e: RuntimeException if e.getMessage.contains("ASSERT FAILED") ⇒ {
+      case e: RuntimeException if e.getMessage.contains("ASSERT FAILED") => {
         txn.rollbackSavepoint(savepoint)
         Logger.info("Getting all the generated keys from a batch INSERT is not supported by this driver")
         for (item ← items)
           insertItem(txn, item)
       }
-      case e: UnsupportedJDBCOperationException ⇒ {
+      case e: UnsupportedJDBCOperationException => {
         txn.rollbackSavepoint(savepoint)
         Logger.info("Getting all the generated keys from a batch INSERT is not supported by this driver")
         for (item ← items)
@@ -437,14 +437,14 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
     try {
       stm.executeUpdate("drop " + drop)
     } catch {
-      case _: Exception ⇒ // Ignore 
+      case _: Exception => // Ignore 
     }
   }
 
   @Test
   def `test FreeMarker sequence expansion macro` {
     val broker = Broker(config)
-    broker.readOnly() { session ⇒
+    broker.readOnly() { session =>
       session.selectAll('selectItems, "ids" -> Seq(1, 2, 3))
     }
   }
@@ -452,7 +452,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
   @Test
   def `test Velocity sequence expansion macro` {
     val broker = Broker(config)
-    broker.readOnly() { session ⇒
+    broker.readOnly() { session =>
       session.selectAll('selectItems_velocity, "ids" -> Seq(1, 2, 3))
     }
   }

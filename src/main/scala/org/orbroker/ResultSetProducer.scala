@@ -20,7 +20,7 @@ private[orbroker] trait ResultSetProducer {
     }
   }
 
-  private[orbroker] def mapResult[T, R](extractor: QueryExtractor[T], rs: ResultSet, receiver: Iterator[T] ⇒ R): R =
+  private[orbroker] def mapResult[T, R](extractor: QueryExtractor[T], rs: ResultSet, receiver: Iterator[T] => R): R =
     try {
       extractor.mapResultSet(rs, receiver, adapter)
     } finally {

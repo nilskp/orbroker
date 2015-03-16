@@ -1,6 +1,6 @@
 package org.orbroker
 
-import scala.collection.immutable.{ Map ⇒ iMap }
+import scala.collection.immutable.{ Map => iMap }
 
 /**
  * The JOIN part of a query. Use this to extract
@@ -30,7 +30,7 @@ trait Join {
    * @param columnAlias Map of column name to column rename
    * @param receiver The receiving function per result object
    */
-  def extractGroup[T](extractor: QueryExtractor[T], columnAlias: Map[String, String] = iMap.empty)(receiver: T ⇒ Unit)
+  def extractGroup[T](extractor: QueryExtractor[T], columnAlias: Map[String, String] = iMap.empty)(receiver: T => Unit)
 
   /**
    * Extract the rest of the rows remaining in this group of rows, 
@@ -43,7 +43,7 @@ trait Join {
    */
   def extractSeq[T](extractor: QueryExtractor[T], columnAlias: Map[String, String] = iMap.empty): IndexedSeq[T] = {
     val buffer = new scala.collection.mutable.ArrayBuffer[T](64)
-    extractGroup(extractor, columnAlias) { t: T ⇒ buffer += t }
+    extractGroup(extractor, columnAlias) { t: T => buffer += t }
     buffer
   }
 }

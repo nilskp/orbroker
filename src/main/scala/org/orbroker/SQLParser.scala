@@ -32,19 +32,19 @@ private[orbroker] object SQLParser {
     var pos = 0
     while (pos < line.length) {
       state.state match {
-        case State.Normal ⇒ pos = normal(line, pos, state)
-        case State.InCComment ⇒ pos = cComment(line, pos, state)
-        case State.InEOLComment ⇒ pos = eolComment(line, pos, state)
-        case State.InString ⇒ pos = inString(line, pos, state)
-        case State.InParm ⇒ pos = inParm(line, pos, state)
-        case State.InSpace ⇒ pos = inSpace(line, pos, state)
-        case State.InParmIdx ⇒ pos = inParmIdx(line, pos, state)
+        case State.Normal => pos = normal(line, pos, state)
+        case State.InCComment => pos = cComment(line, pos, state)
+        case State.InEOLComment => pos = eolComment(line, pos, state)
+        case State.InString => pos = inString(line, pos, state)
+        case State.InParm => pos = inParm(line, pos, state)
+        case State.InSpace => pos = inSpace(line, pos, state)
+        case State.InParmIdx => pos = inParmIdx(line, pos, state)
       }
     }
     state.state match {
-      case State.InEOLComment ⇒ state.state = State.Normal
-      case State.InParm ⇒ state.state = State.Normal
-      case _ ⇒
+      case State.InEOLComment => state.state = State.Normal
+      case State.InParm => state.state = State.Normal
+      case _ =>
     }
   }
 
@@ -69,25 +69,25 @@ private[orbroker] object SQLParser {
     pos + 1
   }
   private def inParm(line: String, pos: Int, state: ParserState): Int = charAt(line, pos) match {
-    case c@('[') ⇒ state.state = State.InParmIdx; state.currentParm append c; pos + 1
-    case c if !isParmChar(c) ⇒ state.state = State.Normal; pos
-    case c ⇒ state.currentParm append c; pos + 1
+    case c@('[') => state.state = State.InParmIdx; state.currentParm append c; pos + 1
+    case c if !isParmChar(c) => state.state = State.Normal; pos
+    case c => state.currentParm append c; pos + 1
   }
 
   private def inParmIdx(line: String, pos: Int, state: ParserState): Int = charAt(line, pos) match {
-    case c@(']') ⇒ state.currentParm append c; state.state = State.Normal; pos + 1
-    case c if (isInteger(c)) ⇒ state.currentParm append c; pos + 1
-    case c ⇒ throw new IllegalArgumentException("Encountered '%c' at index position: %s".format(c, state.currentParm))
+    case c@(']') => state.currentParm append c; state.state = State.Normal; pos + 1
+    case c if (isInteger(c)) => state.currentParm append c; pos + 1
+    case c => throw new IllegalArgumentException("Encountered '%c' at index position: %s".format(c, state.currentParm))
   }
 
   private def normal(line: String, pos: Int, state: ParserState): Int = charAt(line, pos) match {
-    case ':' if isParmFirstChar(charAt(line, pos + 1)) ⇒ {
+    case ':' if isParmFirstChar(charAt(line, pos + 1)) => {
       state.currentParm append line(pos + 1)
       state.sql append '?'
       state.state = State.InParm
       pos + 2
     }
-    case c@(' ' | '\t') ⇒ {
+    case c@(' ' | '\t') => {
       state.state = State.InSpace
       if (state.doTrim) {
         if (state.sql.length > 0) state.sql append ' '
@@ -96,18 +96,18 @@ private[orbroker] object SQLParser {
       }
       pos + 1
     }
-    case '\'' ⇒ state.state = State.InString; state.sql append '\''; pos + 1
-    case '/' if charAt(line, pos + 1) == '*' ⇒ {
+    case '\'' => state.state = State.InString; state.sql append '\''; pos + 1
+    case '/' if charAt(line, pos + 1) == '*' => {
       if (!state.doTrim) state.sql append "/*"
       state.state = State.InCComment;
       pos + 2
     }
-    case '-' if charAt(line, pos + 1) == '-' ⇒ {
+    case '-' if charAt(line, pos + 1) == '-' => {
       if (!state.doTrim) state.sql append "--"
       state.state = State.InEOLComment
       pos + 2
     }
-    case c ⇒ state.sql append c; pos + 1
+    case c => state.sql append c; pos + 1
   }
   private def cComment(line: String, pos: Int, state: ParserState): Int = {
     if (charAt(line, pos) == '*' && charAt(line, pos + 1) == '/') {

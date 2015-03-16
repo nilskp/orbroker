@@ -1,5 +1,7 @@
 package org.orbroker.callback
 
+import org.orbroker.NO_ID
+
 /**
  * Log all warnings.
  */
@@ -9,10 +11,9 @@ trait WarningLoggingCallback extends ExecutionCallback {
 
   def onWarning(warning: java.sql.SQLWarning, stm: Option[Symbol]) {
     stm match {
-      case Some(id) ⇒ {
+      case Some(id) if id != NO_ID =>
         logWarn("Statement '%s': [%s] %s".format(id.name, warning.getSQLState, warning.getMessage))
-      }
-      case None ⇒ logWarn("[%s] %s".format(warning.getSQLState, warning.getMessage))
+      case _ => logWarn("[%s] %s".format(warning.getSQLState, warning.getMessage))
     }
   }
 
@@ -20,6 +21,7 @@ trait WarningLoggingCallback extends ExecutionCallback {
 
 trait SQLLoggingCallback extends ExecutionCallback {
   def logSQL(line: String)
+  protected final def idString(id: Symbol): String = if (id == org.orbroker.NO_ID) "" else s" '${id.name}'"
 }
 
 /**
@@ -34,24 +36,24 @@ trait FullLoggingCallback extends SQLLoggingCallback {
   import LoggingCallback._
 
   def beforeExecute(id: Symbol, sql: String) {
-    logSQL(s"Executing '${id.name}': ${sql.trim}")
+    logSQL(s"Executing${idString(id)}: ${sql.trim}")
   }
 
   def afterExecute(id: Symbol, sql: String, parms: Seq[Any], executionTime: Int) {
     val millis = executionTime / 1000
-    logSQL("Finished '%s' in %,d ms".format(id.name, millis))
+    logSQL(s"Finished${idString(id)} in $millis ms")
   }
 
   def beforeBatchExecute(id: Symbol, sql: String) {
-    logSQL("Executing '%s': %s".format(id.name, sql.trim))
+    logSQL(s"Executing${idString(id)}: ${sql.trim}")
   }
 
   def afterBatchExecute(id: Symbol, sql: String, parms: Seq[Seq[Any]], executionTime: Int) {
     if (parms.isEmpty) {
-      logSQL("Cancelled '%s'. No batch parameters provided.".format(id.name))
+      logSQL(s"Cancelled${idString(id)}. No batch parameters provided.")
     } else {
       val millis = executionTime / 1000
-      logSQL("Finished '%s' (batch of %,d) in %,d ms".format(id.name, parms.size, millis))
+      logSQL(s"Finished${idString(id)} (batch of ${parms.size}) in $millis ms")
     }
   }
 
@@ -74,15 +76,15 @@ trait AfterExecLoggingCallback extends SQLLoggingCallback {
   def afterExecute(id: Symbol, sql: String, parms: Seq[Any], executionTime: Int) {
     val millis = executionTime / 1000
     val sqlWithValues = embedValues(sql.trim, parms)
-    logSQL("Executed '%s' in %,d ms: %s".format(id.name, millis, sqlWithValues))
+    logSQL(s"Executed${idString(id)} in $millis ms: $sqlWithValues")
   }
 
   def afterBatchExecute(id: Symbol, sql: String, parms: Seq[Seq[Any]], executionTime: Int) {
     if (!parms.isEmpty) {
       val millis = executionTime / 1000
-      logSQL("Executed '%s' (%,d times) in %,d ms: %s".format(id.name, parms.size, millis, sql.trim))
+      logSQL(s"Executed${idString(id)} (${parms.size} times) in $millis ms: ${sql.trim}")
     } else if (logEmptyBatch) {
-      logSQL("Cancelled '%s'. No batch parameters provided.".format(id.name))
+      logSQL(s"Cancelled${idString(id)}. No batch parameters provided.")
     }
   }
 
@@ -90,7 +92,7 @@ trait AfterExecLoggingCallback extends SQLLoggingCallback {
 
 object LoggingCallback {
 
-  private val ReplaceParmHolders = java.util.regex.Pattern.compile("""(\?)(?=(?:[^']|'[^']*')*$)""")
+  private val ReplaceParmHolders = """(\?)(?=(?:[^']|'[^']*')*$)""".r.pattern
 
   def embedValues(sql: String, parms: Seq[Any]): String = {
     val returnSql = new StringBuffer()
@@ -98,9 +100,9 @@ object LoggingCallback {
     val i = parms.iterator
     while (matcher.find() && i.hasNext) {
       val sqlParm = i.next match {
-        case null ⇒ "NULL"
-        case parm @ (_: CharSequence | _: java.util.Date) ⇒ "'" + parm + "'"
-        case parm ⇒ parm.toString
+        case null => "NULL"
+        case parm @ (_: CharSequence | _: java.util.Date) => "'" + parm + "'"
+        case parm => parm.toString
       }
       matcher.appendReplacement(returnSql, java.util.regex.Matcher.quoteReplacement(sqlParm))
     }

@@ -3,7 +3,7 @@ package org.orbroker
 import java.sql.ResultSet
 import org.orbroker.adapt.BrokerAdapter
 
-private[orbroker] class JoinIterable[T](key: Set[String], rs: ResultSet, adapter: BrokerAdapter, extractor: (Row, Join) ⇒ T) {
+private[orbroker] class JoinIterable[T](key: Set[String], rs: ResultSet, adapter: BrokerAdapter, extractor: (Row, Join) => T) {
   def iterator(): Iterator[T] =
     if (rs.next) {
       new JoinIterator(rs, adapter)

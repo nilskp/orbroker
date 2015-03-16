@@ -30,8 +30,8 @@ trait ExceptionAdapter {
    */
   protected final def stateClass(e: SQLException): Option[String] = {
     this.state(e) match {
-      case None ⇒ None
-      case Some(state) ⇒ Some(state.substring(0, 2))
+      case None => None
+      case Some(state) => Some(state.substring(0, 2))
     }
   }
 
@@ -55,8 +55,8 @@ trait DefaultExceptionAdapter extends ExceptionAdapter {
 
   private def matchState(options: Seq[String], source: SQLException): Boolean = {
     state(source) match {
-      case Some(state) ⇒ for (option ← options) if (state startsWith option) return true
-      case None ⇒ return false
+      case Some(state) => for (option ← options) if (state startsWith option) return true
+      case None => return false
     }
     false
   }

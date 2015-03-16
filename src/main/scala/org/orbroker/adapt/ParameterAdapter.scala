@@ -9,14 +9,14 @@ trait ParameterAdapter {
    * Remember that the supplied sequence has base 0 and JDBC parameters has base 1.
    * @return Sequence of values for [[org.orbroker.callback.ExecutionCallback]], or empty to ignore
    */
-  def setParameters(id: Symbol, ps: PreparedStatement, parmNames: IndexedSeq[String], valuesByName: String ⇒ Any): Seq[Any]
+  def setParameters(id: Symbol, ps: PreparedStatement, parmNames: IndexedSeq[String], valuesByName: String => Any): Seq[Any]
   /**
    * Set all parameter values at the appropriate index on the prepared statement and
    * remember to register OUT and INOUT parameters.
    * Remember that the supplied sequence has base 0 and JDBC parameters has base 1.
    * @return Sequence of values for [[org.orbroker.callback.ExecutionCallback]], or empty to ignore
    */
-  def setParameters(id: Symbol, cs: CallableStatement, parmNames: IndexedSeq[String], valuesByName: String ⇒ Any): Seq[Any]
+  def setParameters(id: Symbol, cs: CallableStatement, parmNames: IndexedSeq[String], valuesByName: String => Any): Seq[Any]
 }
 
 trait AbstractDefaultParameterAdapter extends ParameterAdapter {
@@ -34,7 +34,7 @@ trait AbstractDefaultParameterAdapter extends ParameterAdapter {
    */
   def setParameter(id: Symbol, ps: PreparedStatement, parm: Any, parmIdx: Int)
 
-  def setParameters(id: Symbol, ps: PreparedStatement, parmNames: IndexedSeq[String], valuesByName: String ⇒ Any): Seq[Any] = {
+  def setParameters(id: Symbol, ps: PreparedStatement, parmNames: IndexedSeq[String], valuesByName: String => Any): Seq[Any] = {
     val values = new Array[Any](parmNames.length)
     var idx = 0
     while (idx < parmNames.length) {
@@ -45,7 +45,7 @@ trait AbstractDefaultParameterAdapter extends ParameterAdapter {
     values
   }
 
-  def setParameters(id: Symbol, cs: CallableStatement, parmNames: IndexedSeq[String], valuesByName: String ⇒ Any): Seq[Any] = {
+  def setParameters(id: Symbol, cs: CallableStatement, parmNames: IndexedSeq[String], valuesByName: String => Any): Seq[Any] = {
     val values = new Array[Any](parmNames.length)
     val callInfo = metadata.procedureMetadata(id, parmNames, cs)
     var idx = 0
@@ -70,7 +70,7 @@ trait AbstractDefaultParameterAdapter extends ParameterAdapter {
       setParameter(id, ps, value, idx)
       value
     } catch {
-      case e: Exception ⇒ throw newConfigException(id, name, value.asInstanceOf[AnyRef], e)
+      case e: Exception => throw newConfigException(id, name, value.asInstanceOf[AnyRef], e)
     }
   }
 
@@ -89,7 +89,7 @@ trait AbstractDefaultParameterAdapter extends ParameterAdapter {
       val pType = callInfo.parmType(parmIdx)
       cs.registerOutParameter(parmIdx, pType)
     } catch {
-      case e: SQLException ⇒
+      case e: SQLException =>
         throw new ConfigurationException(
           "Statement '%s' failed to register OUT/INOUT parameter :%s".
             format(callInfo.id.name, parmName), e)

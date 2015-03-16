@@ -20,7 +20,7 @@ object OrderExtractor extends JoinExtractor[Order] {
     val date = row("OrderDate").as[LocalDate]
     val cust = join.extractOne(CustomerExtractor, custAlias).get
     val items = new ArrayBuffer[Item]
-    join.extractGroup(ItemExtractor, itemAlias) { item ⇒
+    join.extractGroup(ItemExtractor, itemAlias) { item =>
       items += item
     }
     val order = new Order(date, cust, items)

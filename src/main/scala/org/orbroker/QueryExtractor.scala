@@ -12,7 +12,7 @@ import java.sql.ResultSet
  * @author Nils Kilden-Pedersen
  */
 sealed trait QueryExtractor[T] {
-  private[orbroker] def mapResultSet[R](rs: ResultSet, receiver: Iterator[T] ⇒ R, adapter: BrokerAdapter): R
+  private[orbroker] def mapResultSet[R](rs: ResultSet, receiver: Iterator[T] => R, adapter: BrokerAdapter): R
 }
 
 /**
@@ -28,7 +28,7 @@ trait RowExtractor[T] extends QueryExtractor[T] {
 
   def extract(row: Row): T
 
-  private[orbroker] override def mapResultSet[R](rs: ResultSet, receiver: Iterator[T] ⇒ R, adapter: BrokerAdapter): R = {
+  private[orbroker] override def mapResultSet[R](rs: ResultSet, receiver: Iterator[T] => R, adapter: BrokerAdapter): R = {
     receiver(new RowIterator(rs, adapter, extract))
   }
 }
@@ -36,7 +36,7 @@ trait RowExtractor[T] extends QueryExtractor[T] {
 trait OutParmExtractor[T] extends QueryExtractor[T] {
   def extract(out: OutParms): T
 
-  private[orbroker] override final def mapResultSet[R](rs: ResultSet, receiver: Iterator[T] ⇒ R, adapter: BrokerAdapter): R =
+  private[orbroker] override final def mapResultSet[R](rs: ResultSet, receiver: Iterator[T] => R, adapter: BrokerAdapter): R =
     throw new IllegalArgumentException("Cannot extract ResultSet using " + getClass)
 }
 
@@ -66,7 +66,7 @@ trait JoinExtractor[T] extends QueryExtractor[T] {
   def key: Set[String]
   def extract(row: Row, join: Join): T
 
-  private[orbroker] override final def mapResultSet[R](rs: ResultSet, receiver: Iterator[T] ⇒ R, adapter: BrokerAdapter): R = {
+  private[orbroker] override final def mapResultSet[R](rs: ResultSet, receiver: Iterator[T] => R, adapter: BrokerAdapter): R = {
     receiver(new JoinIterable(key, rs, adapter, extract).iterator)
   }
 
@@ -75,15 +75,15 @@ trait JoinExtractor[T] extends QueryExtractor[T] {
 private[orbroker] final class DefaultExtractor(id: Symbol) extends RowExtractor[Any] {
   def extract(row: Row): Any = try {
     row.columns.size match {
-      case 1 ⇒ row("1").opt[Any].orNull
-      case 2 ⇒ (row("1").opt[Any].orNull, row("2").opt[Any].orNull)
-      case 3 ⇒ (row("1").opt[Any].orNull, row("2").opt[Any].orNull, row("3").opt[Any].orNull)
-      case 4 ⇒ (row("1").opt[Any].orNull, row("2").opt[Any].orNull, row("3").opt[Any].orNull, row("4").opt[Any].orNull)
-      case 5 ⇒ (row("1").opt[Any].orNull, row("2").opt[Any].orNull, row("3").opt[Any].orNull, row("4").opt[Any].orNull, row("5").opt[Any].orNull)
-      case x ⇒ throw new ConfigurationException(s"$x columns available for '$id', and no RowExtractor registered")
+      case 1 => row("1").opt[Any].orNull
+      case 2 => (row("1").opt[Any].orNull, row("2").opt[Any].orNull)
+      case 3 => (row("1").opt[Any].orNull, row("2").opt[Any].orNull, row("3").opt[Any].orNull)
+      case 4 => (row("1").opt[Any].orNull, row("2").opt[Any].orNull, row("3").opt[Any].orNull, row("4").opt[Any].orNull)
+      case 5 => (row("1").opt[Any].orNull, row("2").opt[Any].orNull, row("3").opt[Any].orNull, row("4").opt[Any].orNull, row("5").opt[Any].orNull)
+      case x => throw new ConfigurationException(s"$x columns available for '$id', and no RowExtractor registered")
     }
   } catch {
-    case e: NoSuchElementException ⇒ throw new ConfigurationException(s"Statement '$id' contains NULL values. Must register a RowExtractor")
+    case e: NoSuchElementException => throw new ConfigurationException(s"Statement '$id' contains NULL values. Must register a RowExtractor")
   }
 }
 

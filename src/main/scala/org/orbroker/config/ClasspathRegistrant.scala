@@ -19,13 +19,13 @@ object ClasspathRegistrant {
   def apply(
     resourcePath: String,
     ids: Set[Symbol],
-    idToName: Symbol ⇒ String = { id: Symbol ⇒ id.name concat ".sql" },
+    idToName: Symbol => String = { id: Symbol => id.name concat ".sql" },
     cl: Class[_] = getClass): Registrant = apply(toMap(resourcePath, ids, idToName), cl)
 
-  private def toMap(p: String, ids: Set[Symbol], idToName: Symbol ⇒ String) = {
+  private def toMap(p: String, ids: Set[Symbol], idToName: Symbol => String) = {
     val path = if (p endsWith "/") p else p concat "/"
     var map = immutable.Map.empty[Symbol, String]
-    ids foreach { id ⇒
+    ids foreach { id =>
       map += id -> (path + idToName(id))
     }
     map
@@ -43,13 +43,13 @@ private class ClasspathRegistrant(
 
   override def register(bb: BrokerConfig) {
     idToResource foreach {
-      case (id, resource) ⇒
+      case (id, resource) =>
         cl.getResourceAsStream(resource) match {
-          case null ⇒ {
+          case null => {
             throw new ConfigurationException(
               "SQL statement '%s' not found: %s".format(id.name, resource))
           }
-          case stream ⇒ bb.register(id, new java.io.InputStreamReader(stream))
+          case stream => bb.register(id, new java.io.InputStreamReader(stream))
         }
     }
   }

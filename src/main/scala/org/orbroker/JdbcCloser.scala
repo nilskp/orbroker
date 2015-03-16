@@ -32,7 +32,7 @@ private[orbroker] object JdbcCloser {
     try {
       handleWarning(stm, callback, exe.getWarnings(jdbc))
     } catch {
-      case e: SQLException ⇒ // Ignore
+      case e: SQLException => // Ignore
     } finally {
       exe.close(jdbc)
     }

@@ -20,7 +20,7 @@ private[orbroker] class FreeMarkerStatement(
 
   private val template = {
     val sql = if (usesINPredicate(freemarkerSQL)) {
-      val useSquareBrackets = freemarkerSQL.exists { line ⇒
+      val useSquareBrackets = freemarkerSQL.exists { line =>
         FindFTLDirective.findFirstMatchIn(line).exists(_.group(1) == "[")
       }
       freemarkerSQL.mkString(EOL) + EOL + (if (useSquareBrackets) SeqExpansionMacroSquare else SeqExpansionMacroAngle)
@@ -48,7 +48,7 @@ private[dynamic] object FreeMarkerStatement {
     Class.forName("freemarker.template.Template")
     true
   } catch {
-    case _: Throwable ⇒ false
+    case _: Throwable => false
   }
   def hasFreeMarkerConditionals(sq1: String) =
     ((sq1 contains "#if") && (sq1 contains "/#if")) ||

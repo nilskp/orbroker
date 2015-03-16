@@ -11,10 +11,10 @@ private[orbroker] trait StatefulRow extends Row {
   }
 
   def matches(compKeyValues: Map[String, Any]) = keyValues.size == compKeyValues.size &&
-    keyValues.forall { entry ⇒
+    keyValues.forall { entry =>
       compKeyValues.getOrElse(entry._1, null) match {
-        case ba: Array[Byte] ⇒ java.util.Arrays.equals(ba, entry._2.asInstanceOf[Array[Byte]])
-        case any ⇒ entry._2 == any
+        case ba: Array[Byte] => java.util.Arrays.equals(ba, entry._2.asInstanceOf[Array[Byte]])
+        case any => entry._2 == any
       }
     }
 

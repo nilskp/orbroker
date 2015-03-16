@@ -45,8 +45,8 @@ private[orbroker] abstract class Session(
   var fetchSize = broker.fetchSize
 
   protected[orbroker] final def connection = extConn match {
-    case Some(ec) ⇒ ec
-    case None ⇒ {
+    case Some(ec) => ec
+    case None => {
       if (conn == null) {
         conn = broker.newConnection(isolationLevel)
         if (conn.isReadOnly != readOnly) conn.setReadOnly(readOnly)
@@ -57,7 +57,7 @@ private[orbroker] abstract class Session(
 
   private[orbroker] def discardConnection() {
     if (conn != null) {
-      try { conn.close() } catch { case _: Exception ⇒ /* Ignore */ }
+      try { conn.close() } catch { case _: Exception => /* Ignore */ }
       conn = null
     }
   }
@@ -78,7 +78,7 @@ private[orbroker] abstract class Session(
 
   protected final def toMap(args: Iterable[(String, _)]): Map[String, Any] = {
     var map: Map[String, Any] = broker.defaultParms
-    args foreach { case arg @ (key, value) ⇒
+    args foreach { case arg @ (key, value) =>
         if (value.isInstanceOf[Traversable[_]]) {
           val array = value.asInstanceOf[Traversable[Any]].toArray
           map += (key -> array)

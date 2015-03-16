@@ -26,10 +26,10 @@ package object pimp {
      * @param merger Merging function
      * @return Collection of extracted object, in the order first encountered from result set
      */
-    def selectUnordered[T](token: Token[T], parms: (String, Any)*)(kf: T ⇒ Any)(merger: (T, T) ⇒ T): Iterable[T] = {
+    def selectUnordered[T](token: Token[T], parms: (String, Any)*)(kf: T => Any)(merger: (T, T) => T): Iterable[T] = {
       val map = new LinkedHashMap[Any, T]
-      qry.select(token, parms: _*) { rows ⇒
-        rows.foreach { t ⇒
+      qry.select(token, parms: _*) { rows =>
+        rows.foreach { t =>
           val key = kf(t)
           val ot = map.get(key)
           if (ot != null) { // Replace with merged object
@@ -51,8 +51,8 @@ package object pimp {
      */
     def selectToBuffer[T](token: Token[T], buffer: Buffer[T], parms: (String, Any)*): Int = {
       val preSize = buffer.size
-      qry.select(token, parms: _*) { rows ⇒
-        rows.foreach { t ⇒
+      qry.select(token, parms: _*) { rows =>
+        rows.foreach { t =>
           buffer += t
         }
       }
@@ -74,10 +74,10 @@ package object pimp {
      * @param extractor
      * @param receiver
      */
-    def extract[T, R](parmName: String)(extractor: QueryExtractor[T])(receiver: Iterator[T] ⇒ R): Option[R] = {
+    def extract[T, R](parmName: String)(extractor: QueryExtractor[T])(receiver: Iterator[T] => R): Option[R] = {
       for (rs ← out(parmName).opt[ResultSet]) yield extractor match {
-        case je: JoinExtractor[_] ⇒ out.mapResult(new SafeJoinExtractor(je), rs, receiver)
-        case _ ⇒ out.mapResult(extractor, rs, receiver)
+        case je: JoinExtractor[_] => out.mapResult(new SafeJoinExtractor(je), rs, receiver)
+        case _ => out.mapResult(extractor, rs, receiver)
       }
     }
 
@@ -90,8 +90,8 @@ package object pimp {
     @throws(classOf[MoreThanOneException])
     def extractOne[T](parmName: String)(extractor: QueryExtractor[T]): Option[T] = {
       var maybe: Option[T] = None
-      extract(parmName)(extractor) { rows ⇒
-        rows.foreach { t ⇒
+      extract(parmName)(extractor) { rows =>
+        rows.foreach { t =>
           if (maybe.isEmpty) {
             maybe = Some(t)
           } else {
@@ -109,9 +109,9 @@ package object pimp {
      * @param receiver
      */
     def extractAll[T](parmName: String)(extractor: QueryExtractor[T]): IndexedSeq[T] = {
-      extract(parmName)(extractor) { rows ⇒
+      extract(parmName)(extractor) { rows =>
         rows.foldLeft(new scala.collection.mutable.ArrayBuffer[T](64)) {
-          case (buffer, t) ⇒
+          case (buffer, t) =>
             buffer += t
             buffer
         }

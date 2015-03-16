@@ -9,7 +9,7 @@ import java.sql.{ SQLException, ResultSet, Connection, PreparedStatement }
 
 private[orbroker] trait ModifyStatement extends SQLStatement with GenKeyProducer {
 
-  def execute[K](token: Token[K], timeout: Int, conn: Connection, parms: Map[String, _], genKeyHandler: Option[K ⇒ Unit]): Int = {
+  def execute[K](token: Token[K], timeout: Int, conn: Connection, parms: Map[String, _], genKeyHandler: Option[K => Unit]): Int = {
     val parsed = statement(parms)
     val starting = System.nanoTime
     callback.beforeExecute(token.id, parsed.sql)
@@ -30,7 +30,7 @@ private[orbroker] trait ModifyStatement extends SQLStatement with GenKeyProducer
 
   def executeBatch[G](
     token: Token[G], timeout: Int, conn: Connection, batchParms: (String, Traversable[_]),
-    parms: Map[String, _], genKeyHandler: Option[G ⇒ Unit]): Int = {
+    parms: Map[String, _], genKeyHandler: Option[G => Unit]): Int = {
     val starting = System.nanoTime
     val (batchParmName, batchParmValues) = batchParms
     val parsed = statement(parms)
@@ -39,7 +39,7 @@ private[orbroker] trait ModifyStatement extends SQLStatement with GenKeyProducer
     val batchValues = new ArrayBuffer[Seq[Any]]
     try {
       ps.setQueryTimeout(timeout)
-      batchParmValues foreach { batchParm ⇒
+      batchParmValues foreach { batchParm =>
         val allParms = if (batchParmName.length == 0) {
           parms
         } else {

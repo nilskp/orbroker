@@ -40,15 +40,15 @@ package object orbroker {
   import scala.collection.generic.FilterMonadic
 
   implicit def viewToTraversable[A](view: TraversableView[A, Traversable[A]]) = new Traversable[A] {
-    def foreach[U](callback: (A) ⇒ U) = view.foreach(callback)
+    def foreach[U](callback: (A) => U) = view.foreach(callback)
   }
 
   implicit def filterMonadicToTraversable[A](monadic: FilterMonadic[A, Traversable[A]]) = new Traversable[A] {
-    def foreach[U](callback: (A) ⇒ U) = monadic.foreach(callback)
+    def foreach[U](callback: (A) => U) = monadic.foreach(callback)
   }
 
   implicit def iteratorToTraversable[A](iterator: Iterator[A]) = new Traversable[A] {
-    def foreach[U](callback: (A) ⇒ U) {
+    def foreach[U](callback: (A) => U) {
       while (iterator.hasNext) callback(iterator.next)
     }
   }

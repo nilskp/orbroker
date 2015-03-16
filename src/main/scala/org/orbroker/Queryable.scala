@@ -7,15 +7,15 @@ import scala.collection.mutable.ArrayBuffer
 
 private[orbroker] trait Queryable extends Session {
 
-  protected def queryFromSelect[T, R](token: Token[T], qs: QueryStatement, parms: Seq[(String, Any)], receiver: Iterator[T] ⇒ R): R = {
+  protected def queryFromSelect[T, R](token: Token[T], qs: QueryStatement, parms: Seq[(String, Any)], receiver: Iterator[T] => R): R = {
     try {
       qs.query(token, this, toMap(parms), receiver)
     } catch {
-      case e: SQLException ⇒ throw evaluate(token.id, e)
+      case e: SQLException => throw evaluate(token.id, e)
     }
   }
 
-  protected def queryFromCall[T, R](token: Token[T], cs: CallStatement, parms: Seq[(String, Any)], receiver: Iterator[T] ⇒ R): R
+  protected def queryFromCall[T, R](token: Token[T], cs: CallStatement, parms: Seq[(String, Any)], receiver: Iterator[T] => R): R
 
   /**
    * Execute query without calling back. It is expected that the
@@ -24,7 +24,7 @@ private[orbroker] trait Queryable extends Session {
    * @param parms Parameters for statement, if any
    */
   def selectInto(token: Token[_], parms: (String, Any)*) {
-    select(token, parms: _*)((_) ⇒ true)
+    select(token, parms: _*)((_) => true)
   }
 
   /**
@@ -34,11 +34,11 @@ private[orbroker] trait Queryable extends Session {
    * @param receiver The result object receiver function, which
    * is expected to return `true` to receive next object, `false` to stop
    */
-  def select[T, R](token: Token[T], parms: (String, Any)*)(receiver: Iterator[T] ⇒ R): R = {
+  def select[T, R](token: Token[T], parms: (String, Any)*)(receiver: Iterator[T] => R): R = {
     getStatement(token) match {
-      case qs: QueryStatement ⇒ queryFromSelect(token, qs, parms, receiver)
-      case cs: CallStatement ⇒ queryFromCall(token, cs, parms, receiver)
-      case _ ⇒ throw new ConfigurationException("Statement '%s' is not a query".format(token.id.name))
+      case qs: QueryStatement => queryFromSelect(token, qs, parms, receiver)
+      case cs: CallStatement => queryFromCall(token, cs, parms, receiver)
+      case _ => throw new ConfigurationException("Statement '%s' is not a query".format(token.id.name))
     }
   }
 
@@ -52,8 +52,8 @@ private[orbroker] trait Queryable extends Session {
   @throws(classOf[MoreThanOneException])
   def selectOne[T](token: Token[T], parms: (String, Any)*): Option[T] = {
     var maybe: Option[T] = None
-    select(token, parms: _*) { rows ⇒
-      rows.foreach { t ⇒
+    select(token, parms: _*) { rows =>
+      rows.foreach { t =>
         if (maybe.isEmpty) {
           maybe = Some(t)
         } else {
@@ -71,9 +71,9 @@ private[orbroker] trait Queryable extends Session {
    * @return The sequence of results.
    */
   def selectAll[T](token: Token[T], parms: (String, Any)*): IndexedSeq[T] = {
-    select(token, parms: _*) { rows ⇒
+    select(token, parms: _*) { rows =>
       rows.foldLeft(new ArrayBuffer[T](64)) {
-        case (buffer, t) ⇒
+        case (buffer, t) =>
           buffer += t
       }
     }
@@ -95,9 +95,9 @@ private[orbroker] trait Queryable extends Session {
       if (userFetchSize == 0 || userFetchSize > count) {
         fetchSize = count
       }
-      val buffer = select(token, parms: _*) { rows ⇒
+      val buffer = select(token, parms: _*) { rows =>
         rows.take(count).foldLeft(new ArrayBuffer[T](count)) {
-          case (buffer, t) ⇒ buffer += t
+          case (buffer, t) => buffer += t
         }
       }
       fetchSize = userFetchSize

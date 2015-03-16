@@ -18,15 +18,15 @@ private[orbroker] abstract class SQLStatement(
   protected final def setParms(token: Token[_], ps: PreparedStatement, parmDefs: IndexedSeq[String], parms: Map[String, _]): Seq[Any] = {
     val values = new ValuesByName(token, parms, mirror)
     ps match {
-      case cs: CallableStatement ⇒ adapter.setParameters(token.id, cs, parmDefs, values)
-      case _ ⇒ adapter.setParameters(token.id, ps, parmDefs, values)
+      case cs: CallableStatement => adapter.setParameters(token.id, cs, parmDefs, values)
+      case _ => adapter.setParameters(token.id, ps, parmDefs, values)
     }
   }
 
 }
 
 import org.orbroker.adapt.MetadataAdapter
-import java.util.{ Map ⇒ JMap, HashMap ⇒ JHashMap }
+import java.util.{ Map => JMap, HashMap => JHashMap }
 
 private[orbroker] object SQLStatement {
 

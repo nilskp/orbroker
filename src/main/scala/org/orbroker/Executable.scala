@@ -16,16 +16,16 @@ private[orbroker] trait Executable extends Session {
    */
   def execute(token: Token[_], parms: (String, Any)*): Int = execute(token, parms, null)
 
-  def executeForKeys[G](token: Token[G], parms: (String, Any)*)(keyHandler: G ⇒ Unit): Int = {
+  def executeForKeys[G](token: Token[G], parms: (String, Any)*)(keyHandler: G => Unit): Int = {
     execute(token, parms, keyHandler)
   }
 
-  private def execute[G](token: Token[G], parms: Seq[(String, Any)], keyHandler: G ⇒ Unit): Int = {
+  private def execute[G](token: Token[G], parms: Seq[(String, Any)], keyHandler: G => Unit): Int = {
     val ms = getModStatement(token)
     val count = try {
       ms.execute(token, timeout, connection, toMap(parms), Option(keyHandler))
     } catch {
-      case e: SQLException ⇒ throw evaluate(token.id, e)
+      case e: SQLException => throw evaluate(token.id, e)
     }
     uncommittedChanges |= count > 0
     count
@@ -41,7 +41,7 @@ private[orbroker] trait Executable extends Session {
    */
   def executeForKey[G](token: Token[G], parms: (String, Any)*): Option[G] = {
     var maybe: Option[G] = None
-    executeForKeys(token, parms: _*) { key ⇒
+    executeForKeys(token, parms: _*) { key =>
       if (maybe == None) {
         maybe = Some(key)
       } else {
@@ -89,7 +89,7 @@ private[orbroker] trait Executable extends Session {
    * @param keyHandler The generated key callback handler
    * @return The number of rows affected
    */
-  def executeBatchForKeys[G](token: Token[G], batchValues: (String, Traversable[_]), parms: (String, Any)*)(keyHandler: G ⇒ Unit): Int = {
+  def executeBatchForKeys[G](token: Token[G], batchValues: (String, Traversable[_]), parms: (String, Any)*)(keyHandler: G => Unit): Int = {
     require(batchValues._1.trim.length > 0, "Batch name cannot be blank")
     executeBatch(token, batchValues, parms, keyHandler)
   }
@@ -104,17 +104,17 @@ private[orbroker] trait Executable extends Session {
    * @param keyHandler The generated key callback handler
    * @return The number of rows affected
    */
-  def executeBatchForKeys[G](token: Token[G], batchCount: Int, parms: (String, Any)*)(keyHandler: G ⇒ Unit): Int = {
+  def executeBatchForKeys[G](token: Token[G], batchCount: Int, parms: (String, Any)*)(keyHandler: G => Unit): Int = {
     val batchValues = new Array[Unit](batchCount).toTraversable
     executeBatch(token, ""->batchValues, parms, keyHandler)
   }
 
-  private def executeBatch[G](token: Token[G], batchValues: (String, Traversable[_]), parms: Seq[(String, Any)], keyHandler: G ⇒ Unit): Int = {
+  private def executeBatch[G](token: Token[G], batchValues: (String, Traversable[_]), parms: Seq[(String, Any)], keyHandler: G => Unit): Int = {
     val ms = getModStatement(token)
     val count = try {
       ms.executeBatch(token, timeout, connection, batchValues, toMap(parms), Option(keyHandler))
     } catch {
-      case e: SQLException ⇒ throw evaluate(token.id, e)
+      case e: SQLException => throw evaluate(token.id, e)
     }
     uncommittedChanges |= count > 0
     count

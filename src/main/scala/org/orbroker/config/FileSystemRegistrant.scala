@@ -15,7 +15,7 @@ object FileSystemRegistrant {
    */
   def apply(dir: File): Registrant = apply(dir, SQLFileFilter, NameIsIDExtractor)
   
-  def apply(dir: File, filter: FilenameFilter, idExtractor: String ⇒ Symbol): Registrant =
+  def apply(dir: File, filter: FilenameFilter, idExtractor: String => Symbol): Registrant =
     new FileSystemRegistrant(dir, filter, idExtractor)
 }
 
@@ -27,7 +27,7 @@ object FileSystemRegistrant {
  */
 private class FileSystemRegistrant (
     dir: File, filter: FilenameFilter, 
-    idExtractor: String ⇒ Symbol
+    idExtractor: String => Symbol
 ) extends Registrant {
 
   require(dir.isDirectory, dir + " is not a directory")

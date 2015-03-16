@@ -13,11 +13,11 @@ private[orbroker] trait GenKeyProducer {
   protected def adapter: BrokerAdapter
 
   protected def handleGeneratedKeys[G](
-    token: Token[G], genKeyHandler: G ⇒ Unit,
+    token: Token[G], genKeyHandler: G => Unit,
     rs: ResultSet, expectedRows: Int) {
     val extractor: RowExtractor[G] = token.extractor match {
-      case re: RowExtractor[_] ⇒ re
-      case qe ⇒ throw new ConfigurationException("Statement '%s' needs a %s, not: %s".format(token.id.name, classOf[RowExtractor[_]].getSimpleName, qe.getClass.getName))
+      case re: RowExtractor[_] => re
+      case qe => throw new ConfigurationException("Statement '%s' needs a %s, not: %s".format(token.id.name, classOf[RowExtractor[_]].getSimpleName, qe.getClass.getName))
     }
     try {
       val row = new ResultSetRow(rs, adapter, Map.empty)

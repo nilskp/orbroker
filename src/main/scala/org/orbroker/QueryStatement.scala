@@ -6,7 +6,7 @@ private[orbroker] trait QueryStatement extends SQLStatement with ResultSetProduc
 
   private def preparedAndQuery[T, R](
     token: Token[T], session: Session, parsed: ParsedSQL,
-    parms: Map[String, Any], receiver: Iterator[T] ⇒ R): (Seq[Any], R) = {
+    parms: Map[String, Any], receiver: Iterator[T] => R): (Seq[Any], R) = {
     val ps = parsed.prepareQuery(session.connection)
     try {
       setFeatures(ps, session)
@@ -20,7 +20,7 @@ private[orbroker] trait QueryStatement extends SQLStatement with ResultSetProduc
 
   private def unpreparedAndQuery[T, R](
     token: Token[T], session: Session,
-    parsed: ParsedSQL, receiver: Iterator[T] ⇒ R): R = {
+    parsed: ParsedSQL, receiver: Iterator[T] => R): R = {
     val stm = parsed.createStatement(session.connection)
     try {
       setFeatures(stm, session)
@@ -33,7 +33,7 @@ private[orbroker] trait QueryStatement extends SQLStatement with ResultSetProduc
 
   def query[T, R](
     token: Token[T], session: Session,
-    parms: Map[String, Any], receiver: Iterator[T] ⇒ R): R = {
+    parms: Map[String, Any], receiver: Iterator[T] => R): R = {
     val started = System.nanoTime
     val parsed = statement(parms)
     callback.beforeExecute(token.id, parsed.sql)

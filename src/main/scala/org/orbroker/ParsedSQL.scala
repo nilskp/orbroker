@@ -17,19 +17,19 @@ private[orbroker] final class ParsedSQL(
     require(parmDefs.isEmpty, "Must prepare statement when parameters exist")
     conn.createStatement(TYPE_FORWARD_ONLY, CONCUR_READ_ONLY)
   } catch {
-    case e: SQLException ⇒ throw preparationError(e)
+    case e: SQLException => throw preparationError(e)
   }
 
   def prepareQuery(conn: Connection) = try {
     conn.prepareStatement(sql, TYPE_FORWARD_ONLY, CONCUR_READ_ONLY)
   } catch {
-    case e: SQLException ⇒ throw preparationError(e)
+    case e: SQLException => throw preparationError(e)
   }
 
   def prepareUpdate(conn: Connection, genKeys: Boolean) = try {
     adapter.prepareUpdate(id, conn, sql, genKeys)
   } catch {
-    case e: SQLException ⇒ throw preparationError(e)
+    case e: SQLException => throw preparationError(e)
   }
 
   lazy val parmIdxMap: Map[String, Int] = {
@@ -50,7 +50,7 @@ private[orbroker] final class ParsedSQL(
     }
     cs
   } catch {
-    case e: SQLException ⇒ throw preparationError(e)
+    case e: SQLException => throw preparationError(e)
   }
 
   private def preparationError(e: SQLException) = {

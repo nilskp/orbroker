@@ -5,7 +5,7 @@ import adapt.BrokerAdapter
 import callback.ExecutionCallback
 
 import java.util.HashMap
-import scala.collection.immutable.{ Map ⇒ iMap }
+import scala.collection.immutable.{ Map => iMap }
 import java.sql.ResultSet
 
 private[orbroker] class JoinGroup private (
@@ -21,7 +21,7 @@ private[orbroker] class JoinGroup private (
   private val columnAliases = toUpper(_columnAliases)
 
   private def toUpper(map: Map[String, String]): Map[String, String] = {
-    map.map(entry ⇒ entry._1.toUpperCase -> entry._2.toUpperCase)
+    map.map(entry => entry._1.toUpperCase -> entry._2.toUpperCase)
   }
 
   def newGroup() {
@@ -70,16 +70,16 @@ private[orbroker] class JoinGroup private (
     Option(result)
   }
 
-  override def extractGroup[T](ext: QueryExtractor[T], aliases: Map[String, String])(receiver: T ⇒ Unit) {
+  override def extractGroup[T](ext: QueryExtractor[T], aliases: Map[String, String])(receiver: T => Unit) {
     this.newGroup()
     ext match {
-      case re: RowExtractor[_] ⇒ extractRows(re, aliases, receiver)
-      case je: JoinExtractor[_] ⇒ extractJoin(je, aliases, receiver)
-      case _ ⇒ throw new ConfigurationException("Cannot extract group using " + ext.getClass.getSimpleName)
+      case re: RowExtractor[_] => extractRows(re, aliases, receiver)
+      case je: JoinExtractor[_] => extractJoin(je, aliases, receiver)
+      case _ => throw new ConfigurationException("Cannot extract group using " + ext.getClass.getSimpleName)
     }
   }
 
-  private def extractJoin[T](rawExt: JoinExtractor[T], aliases: Map[String, String], receiver: T ⇒ Unit) {
+  private def extractJoin[T](rawExt: JoinExtractor[T], aliases: Map[String, String], receiver: T => Unit) {
     val extractor = new SafeJoinExtractor[T](rawExt)
     val proxy = new JoinGroup(extractor.key, rs, aliases ++ columnAliases, cache, adapter)
     do {
@@ -98,7 +98,7 @@ private[orbroker] class JoinGroup private (
     rsAdvanced = true
   }
 
-  private def extractRows[T](extractor: RowExtractor[T], aliases: Map[String, String], receiver: T ⇒ Unit) {
+  private def extractRows[T](extractor: RowExtractor[T], aliases: Map[String, String], receiver: T => Unit) {
     val proxy = new JoinGroup(keyColumns, rs, aliases ++ columnAliases, cache, adapter)
     do {
       proxy.newGroup()

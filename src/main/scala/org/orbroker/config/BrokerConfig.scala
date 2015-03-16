@@ -106,8 +106,8 @@ class BrokerConfig(dataSource: javax.sql.DataSource) extends DynamicSupport {
     if (isProcedureCall(sql)) {
       new StaticStatement(id, sqlLines, trimSQL, callback, adapter) with CallStatement
     } else dynamicStatement(id, sql, sqlLines) match {
-      case Some(dynStm) ⇒ dynStm
-      case None ⇒ new StaticStatement(id, sqlLines, trimSQL, callback, adapter) with ModifyStatement with QueryStatement
+      case Some(dynStm) => dynStm
+      case None => new StaticStatement(id, sqlLines, trimSQL, callback, adapter) with ModifyStatement with QueryStatement
     }
   }
 

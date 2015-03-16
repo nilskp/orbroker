@@ -45,8 +45,8 @@ final class Broker private[orbroker] (
 
   private[orbroker] def newConnection(isolationLevel: Option[Int]) = {
     val conn = usernamePassword match {
-      case Some((usr, pwd)) ⇒ this.dataSource.getConnection(usr, pwd)
-      case None ⇒ this.dataSource.getConnection
+      case Some((usr, pwd)) => this.dataSource.getConnection(usr, pwd)
+      case None => this.dataSource.getConnection
     }
 
     for (cl ← this.catalog if conn.getCatalog != cl) {
@@ -68,23 +68,23 @@ final class Broker private[orbroker] (
    * @param isolationLevel The desired transaction isolation level. Leave empty for default.
    * @param f Read-only query block
    */
-  def readOnly[T](isolationLevel: Int = NoneProvided)(f: QuerySession ⇒ T): T = {
+  def readOnly[T](isolationLevel: Int = NoneProvided)(f: QuerySession => T): T = {
     readOnly(f, if (isolationLevel == NoneProvided) defaultIsolation else Some(isolationLevel))
   }
 
-  private def readOnly[T](f: QuerySession ⇒ T, isolationLevel: Option[Int]): T = {
+  private def readOnly[T](f: QuerySession => T, isolationLevel: Option[Int]): T = {
     var hasException = false
     val session = new ReadOnly(isolationLevel, this, None)
     try {
       runSession(session, true, f)
     } catch {
-      case e: Exception ⇒ hasException = true; throw e
+      case e: Exception => hasException = true; throw e
     } finally {
       try {
         session.close()
       } catch {
-        case e: Exception if !hasException ⇒ throw e
-        case _: Exception ⇒ // Ignore and allow other exception 
+        case e: Exception if !hasException => throw e
+        case _: Exception => // Ignore and allow other exception 
       }
     }
 
@@ -97,7 +97,7 @@ final class Broker private[orbroker] (
    * @param conn The external connection
    * @param f Read-only query block
    */
-  def readOnly[T](conn: Connection)(f: QuerySession ⇒ T): T = {
+  def readOnly[T](conn: Connection)(f: QuerySession => T): T = {
     val session = new ReadOnly(None, this, Some(conn))
     runSession(session, false, f)
   }
@@ -109,23 +109,23 @@ final class Broker private[orbroker] (
    * @param isolationLevel The desired transaction isolation level, or empty for default.
    * @param f Transactional execution block
    */
-  def transactional[T](isolationLevel: Int = NoneProvided)(f: Transactional ⇒ T): T = {
+  def transactional[T](isolationLevel: Int = NoneProvided)(f: Transactional => T): T = {
     transactional(f, if (isolationLevel == NoneProvided) defaultIsolation else Some(isolationLevel))
   }
 
-  private def transactional[T](f: Transactional ⇒ T, isolationLevel: Option[Int]): T = {
+  private def transactional[T](f: Transactional => T, isolationLevel: Option[Int]): T = {
     var hasException = false
     val session = new Transactional(isolationLevel, this)
     try {
       runSession(session, true, f)
     } catch {
-      case e: Exception ⇒ hasException = true; throw e
+      case e: Exception => hasException = true; throw e
     } finally {
       try {
         session.close()
       } catch {
-        case e: Exception if !hasException ⇒ throw e
-        case _: Exception ⇒ // Ignore and allow other exception 
+        case e: Exception if !hasException => throw e
+        case _: Exception => // Ignore and allow other exception 
       }
     }
 
@@ -139,7 +139,7 @@ final class Broker private[orbroker] (
    * @param conn The external connection
    * @param f Transaction execution block
    */
-  def transactional[T](conn: Connection)(f: Transaction ⇒ T): T = {
+  def transactional[T](conn: Connection)(f: Transaction => T): T = {
     val session = new Transaction(None, this, Some(conn))
     runSession(session, false, f)
   }
@@ -150,23 +150,23 @@ final class Broker private[orbroker] (
    * @param isolationLevel The desired transaction isolation level, or empty for default.
    * @param f Transactional execution block
    */
-  def transaction[T](isolationLevel: Int = NoneProvided)(f: Transaction ⇒ T): T = {
-    transactional(isolationLevel) { session ⇒
+  def transaction[T](isolationLevel: Int = NoneProvided)(f: Transaction => T): T = {
+    transactional(isolationLevel) { session =>
       val t = f(session)
       session.commit()
       t
     }
   }
 
-  private def runSession[T, S <: Session](s: S, retryTransient: Boolean, f: S ⇒ T): T = {
+  private def runSession[T, S <: Session](s: S, retryTransient: Boolean, f: S => T): T = {
     try {
       f(s)
     } catch {
-      case e: SQLException if retryTransient && adapter.isTransient(e) ⇒ {
+      case e: SQLException if retryTransient && adapter.isTransient(e) => {
         s.discardConnection()
         runSession(s, false, f)
       }
-      case e: SQLException if !retryTransient && adapter.isTransient(e) ⇒ throw new TransientRetryFailedException(e)
+      case e: SQLException if !retryTransient && adapter.isTransient(e) => throw new TransientRetryFailedException(e)
     }
   }
 
