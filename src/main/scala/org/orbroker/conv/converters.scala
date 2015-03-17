@@ -66,7 +66,7 @@ object JodaDateTimeConv extends ParmConverter {
 }
 
 /**
- * [[java.util.UUID]]<=>[[scala.Array[Byte](16)]].
+ * [[java.util.UUID]]<=>[[scala.Array]]`[Byte](16)`.
  */
 object UUIDBinaryConv extends ParmConverter {
   import java.nio.ByteBuffer
@@ -89,7 +89,7 @@ object UUIDBinaryConv extends ParmConverter {
 }
 
 /**
- * [[java.net.InetAddress]]<=>[[scala.Array[Byte](4)]].
+ * [[java.net.InetAddress]]<=>[[scala.Array]]`[Byte](4)`.
  */
 object Inet4AddrBinaryConv extends ParmConverter {
   type T = java.net.Inet4Address

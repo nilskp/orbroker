@@ -4,8 +4,8 @@ import org.orbroker.{ Row, RowExtractor }
 
 /**
  * A no-op extractor that allows on-the-fly
- * row extraction.
+ * inline column extraction.
  */
-object NoOpExtractor extends RowExtractor[Row] {
+object InlineExtractor extends RowExtractor[Row] {
   def extract(row: Row) = row
 }

@@ -1,5 +1,7 @@
 package org.orbroker.util
 
+import language.existentials
+
 private[orbroker] class Mirror {
 
   private val lookups = new java.util.concurrent.ConcurrentHashMap[(Class[_], String), (AnyRef => Any)]
@@ -18,14 +20,14 @@ private[orbroker] class Mirror {
     }
   }
 
-  @scala.annotation.tailrec
-  private def isNumber(str: String, idx: Int = 0): Boolean = {
+  @annotation.tailrec
+  private def isPosNumber(str: String, idx: Int = 0): Boolean = {
     if (str.length == 0) {
       false
     } else if (idx == str.length) {
       true
     } else {
-      str.charAt(idx) >= '0' && str.charAt(idx) <= '9' && isNumber(str, idx + 1)
+      str.charAt(idx) >= '0' && str.charAt(idx) <= '9' && isPosNumber(str, idx + 1)
     }
   }
 
@@ -34,7 +36,7 @@ private[orbroker] class Mirror {
       return (obj: AnyRef) => obj.asInstanceOf[java.util.Map[String, _]].get(nodeName)
     } else if (parmObj.isInstanceOf[scala.collection.Map[_, _]]) {
       return (obj: AnyRef) => obj.asInstanceOf[scala.collection.Map[String, _]].getOrElse(nodeName, null)
-    } else if (isNumber(nodeName)) {
+    } else if (isPosNumber(nodeName)) {
       val idx = Integer.parseInt(nodeName)
       if (parmObj.getClass.isArray) {
         return (obj: AnyRef) => java.lang.reflect.Array.get(obj, idx)

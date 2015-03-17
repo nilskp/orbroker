@@ -1,22 +1,20 @@
 package org.orbroker
 
 import org.orbroker._
-import org.orbroker.callback._
-import org.orbroker.adapt._
-import org.orbroker.exception._
+
+import callback._
+import adapt._
+import exception._
 
 import java.sql._
 import java.util.LinkedHashMap
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Buffer
 
-/** Package for pimping O/R Broker. */
-package object pimp {
-  /**
-   * Collection of pimped methods for queries.
-   * @author Nils Kilden-Pedersen
-   */
-  implicit final class PimpedQuery(val qry: Queryable) extends AnyVal {
+/** Package for enriching O/R Broker. */
+package object enrich {
+
+  implicit final class RichQuery(val qry: Queryable) extends AnyVal {
 
     /**
      * Execute unordered query and merge values with identical keys.
@@ -66,7 +64,7 @@ package object pimp {
    * @author Nils Kilden-Pedersen
    *
    */
-  implicit class PimpedOutParms(val out: OutParms) extends AnyVal {
+  implicit class RichOutParms(val out: OutParms) extends AnyVal {
 
     /**
      * Extract objects from ResultSet parameter.

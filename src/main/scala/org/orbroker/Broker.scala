@@ -30,7 +30,7 @@ final class Broker private[orbroker] (
     private[orbroker] val adapter: BrokerAdapter,
     private[orbroker] val defaultParms: Map[String, Any]) {
 
-  private final val NoneProvided = Int.MinValue + 1
+  private final val ConfigDefault = Int.MinValue + 1
 
   private[orbroker] def makeStatement(id: Symbol, sql: String) = {
     val sqlLines = sql.split("[\r\n]").filter(_.trim.length > 0).toSeq
@@ -68,8 +68,8 @@ final class Broker private[orbroker] (
    * @param isolationLevel The desired transaction isolation level. Leave empty for default.
    * @param f Read-only query block
    */
-  def readOnly[T](isolationLevel: Int = NoneProvided)(f: QuerySession => T): T = {
-    readOnly(f, if (isolationLevel == NoneProvided) defaultIsolation else Some(isolationLevel))
+  def readOnly[T](isolationLevel: Int = ConfigDefault)(f: QuerySession => T): T = {
+    readOnly(f, if (isolationLevel == ConfigDefault) defaultIsolation else Some(isolationLevel))
   }
 
   private def readOnly[T](f: QuerySession => T, isolationLevel: Option[Int]): T = {
@@ -84,7 +84,7 @@ final class Broker private[orbroker] (
         session.close()
       } catch {
         case e: Exception if !hasException => throw e
-        case _: Exception => // Ignore and allow other exception 
+        case _: Exception => // Ignore and allow other exception
       }
     }
 
@@ -109,8 +109,8 @@ final class Broker private[orbroker] (
    * @param isolationLevel The desired transaction isolation level, or empty for default.
    * @param f Transactional execution block
    */
-  def transactional[T](isolationLevel: Int = NoneProvided)(f: Transactional => T): T = {
-    transactional(f, if (isolationLevel == NoneProvided) defaultIsolation else Some(isolationLevel))
+  def transactional[T](isolationLevel: Int = ConfigDefault)(f: Transactional => T): T = {
+    transactional(f, if (isolationLevel == ConfigDefault) defaultIsolation else Some(isolationLevel))
   }
 
   private def transactional[T](f: Transactional => T, isolationLevel: Option[Int]): T = {
@@ -125,7 +125,7 @@ final class Broker private[orbroker] (
         session.close()
       } catch {
         case e: Exception if !hasException => throw e
-        case _: Exception => // Ignore and allow other exception 
+        case _: Exception => // Ignore and allow other exception
       }
     }
 
@@ -150,7 +150,7 @@ final class Broker private[orbroker] (
    * @param isolationLevel The desired transaction isolation level, or empty for default.
    * @param f Transactional execution block
    */
-  def transaction[T](isolationLevel: Int = NoneProvided)(f: Transaction => T): T = {
+  def transaction[T](isolationLevel: Int = ConfigDefault)(f: Transaction => T): T = {
     transactional(isolationLevel) { session =>
       val t = f(session)
       session.commit()

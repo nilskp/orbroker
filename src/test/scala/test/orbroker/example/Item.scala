@@ -3,7 +3,7 @@ package test.orbroker.example
 import scala.math.{ BigDecimal => Decimal }
 import scala.math.BigDecimal.RoundingMode._
 import org.orbroker._
-import org.orbroker.pimp._
+import org.orbroker.enrich._
 
 class Item(val name: String, private var _price: Decimal) {
   price = _price // Round

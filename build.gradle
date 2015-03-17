@@ -6,6 +6,7 @@ apply plugin: "scala"
 apply plugin: "maven-publish"
 sourceCompatibility = 1.7
 version = "4.0.0-SNAPSHOT"
+def scalaVersion = "2.11.6"
 
 def bintrayVersion = {
     if (version.endsWith('-SNAPSHOT')) {
@@ -28,7 +29,7 @@ repositories {
 jar {
     baseName = "orbroker_2.11"
     manifest {
-        attributes "Implementation-Title": "scuff", "Implementation-Version": version
+        attributes "Implementation-Title": "orbroker", "Implementation-Version": version
     }
 }
 
@@ -78,7 +79,7 @@ bintray {
 dependencies {
     testCompile "junit:junit:4.11"
 
-    compile "org.scala-lang:scala-library:2.11.6"
+    compile "org.scala-lang:scala-library:$scalaVersion"
     compile "org.freemarker:freemarker:2.3.22"
     compile "joda-time:joda-time:2.7"
     compile "org.apache.velocity:velocity:1.7"
@@ -99,4 +100,13 @@ compileTestScala {
         "-Xcheckinit", "-optimise",
         "-Ybackend:GenBCode", "-Yclosure-elim",
     ]
+}
+
+scaladoc {
+    def javaLib = new java.io.File("${System.properties['java.home']}/lib/rt.jar")
+    def scalaLib = classpath.find {
+        it.name.startsWith("scala-library")
+    }
+    def extDocParm = "-doc-external-doc:$scalaLib#www.scala-lang.org/api/$scalaVersion/,$javaLib#docs.oracle.com/javase/7/docs/api/"
+    scalaDocOptions.additionalParameters = [extDocParm,]
 }

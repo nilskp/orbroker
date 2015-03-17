@@ -46,7 +46,6 @@ final class Column private[orbroker] (name: String, rs: ResultSet, tz: java.util
     case e: SQLException => throw newException(e)
   }
 
-  @specialized
   def as[T](implicit extractor: ValueExtractor[T]): T = {
     val value = getValue(extractor)
     if (rs.wasNull) {

@@ -1,30 +1,33 @@
 package org
 
-import java.sql.ResultSet
-import java.sql.CallableStatement
-import language.implicitConversions
+import java.io.{BufferedReader, Reader}
+import java.sql.{CallableStatement, ResultSet}
+
+import scala.BigDecimal
+import scala.collection.{Iterator, Traversable, TraversableView}
+import scala.collection.generic.FilterMonadic
+import scala.language.implicitConversions
+
 import org.joda.time.DateTimeZone
-import org.orbroker.conv.UUIDBinaryConv
-import org.orbroker.conv.LocaleConverter
+import org.orbroker.{Token, ValueExtractor}
+import org.orbroker.conv.{LocaleConverter, UUIDBinaryConv}
 
 /** Main package for O/R Broker. */
 package object orbroker {
 
-  import java.io.{ Reader, LineNumberReader }
   private[orbroker] implicit def readerToIterator(reader: Reader): Iterator[String] = {
-    val lnr =
-      if (reader.isInstanceOf[LineNumberReader])
-        reader.asInstanceOf[LineNumberReader]
-      else
-        new LineNumberReader(reader)
+    val br = reader match {
+      case br: BufferedReader => br
+      case _ => new BufferedReader(reader)
+    }
     new Iterator[String] {
-      var n: String = lnr.readLine
+      var n: String = br.readLine
       override def hasNext = {
         n != null
       }
       override def next = {
         val nn = n
-        n = lnr.readLine
+        n = br.readLine
         nn
       }
     }

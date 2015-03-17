@@ -9,7 +9,7 @@ import org.orbroker.config._
 import org.orbroker.adapt._
 import org.orbroker.callback._
 import org.orbroker.conv._
-import org.orbroker.pimp._
+import org.orbroker.enrich._
 import org.orbroker.util._
 import org.apache.derby.jdbc._
 import scala.collection.mutable.ListBuffer
@@ -113,7 +113,7 @@ class TestBroker {
     create(stm, "TABLE OrderItem (OrderID integer not null, ItemID integer not null, primary key (OrderID, ItemID))")
     create(stm, "TABLE Numbers (num integer)")
     create(stm,
-      """ 
+      """
 PROCEDURE KONGKAT (IN frst CHAR(1), INOUT scnd CHAR(1), OUT aut VARCHAR(10))
 EXTERNAL NAME 'test.orbroker.example.sp.SPCall.kongKat'
 LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
@@ -437,7 +437,7 @@ LANGUAGE JAVA NO SQL PARAMETER STYLE JAVA
     try {
       stm.executeUpdate("drop " + drop)
     } catch {
-      case _: Exception => // Ignore 
+      case _: Exception => // Ignore
     }
   }
 

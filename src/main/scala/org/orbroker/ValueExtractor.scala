@@ -16,24 +16,20 @@ trait ValueExtractor[T] {
   /**
    * Extract value by column name. Should return `null` on NULL values.
    */
-  @specialized
   def apply(column: String, rs: ResultSet, tz: java.util.TimeZone): T
 
   /**
    * Extract value by column index. Should return `null` on NULL values.
    */
-  @specialized
   def apply(column: Int, rs: ResultSet, tz: java.util.TimeZone): T
 
   /**
    * Extract value by parameter name. Should return `null` on NULL values.
    */
-  @specialized
   def apply(column: String, cs: CallableStatement, tz: java.util.TimeZone): T
 
   /**
    * Extract value by parameter index. Should return `null` on NULL values.
    */
-  @specialized
   def apply(column: Int, cs: CallableStatement, tz: java.util.TimeZone): T
 }
