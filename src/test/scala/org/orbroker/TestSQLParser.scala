@@ -4,7 +4,6 @@ import scala.compat.Platform.EOL
 import org.junit._
 import org.junit.Assert._
 import org.orbroker._
-import org.orbroker.pimp._
 
 class TestSQLParser {
   val sql = Seq(
